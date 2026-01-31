@@ -9,3 +9,9 @@ export const REGISTER_EMPLOYEE = gql`
     }
   }
 `;
+
+export const LOGOUT = gql`
+  mutation Logout {
+    logOut
+  }
+`;

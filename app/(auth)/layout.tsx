@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { SiteHeader } from "@/components/site-header";
+import "../globals.css";
+import { ApolloProvider } from "@apollo/client/react";
+import { client } from "../_graphql/client";
+import { ApolloProviderComponent } from "@/components/apollo-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,20 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider
-          style={
-            {
-              "--sidebar-width": "calc(var(--spacing) * 72)",
-              "--header-height": "calc(var(--spacing) * 12)",
-            } as React.CSSProperties
-          }
-        >
-          <AppSidebar variant="inset" />
-          <SidebarInset>
-            <SiteHeader />
-            <div className="p-4">{children}</div>
-          </SidebarInset>
-        </SidebarProvider>
+        <ApolloProviderComponent>{children}</ApolloProviderComponent>
       </body>
     </html>
   );

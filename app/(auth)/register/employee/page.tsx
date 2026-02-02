@@ -36,8 +36,7 @@ export default function EmployeeForm() {
   const router = useRouter();
 
   const [registerEmployee, { loading }] = useMutation(REGISTER_EMPLOYEE, {
-    onCompleted: (data) => {
-      console.log("on completed", data);
+    onCompleted: (data: any) => {
       router.replace("/");
     },
     onError: (error) => {

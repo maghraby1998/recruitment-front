@@ -2,8 +2,15 @@
 
 import { createContext, useContext, useState } from "react";
 
-type User = {
+export enum UserType {
+  EMPLOYEE = "EMPLOYEE",
+  COMPANY = "COMPANY",
+}
+
+export type User = {
   id: string;
+  user_type: UserType;
+  email: string;
   employee: {
     id: number;
     firstName: string;
@@ -17,22 +24,19 @@ type User = {
 
 type AuthContextType = {
   user: User;
-  setUser: (user: User) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider = ({
   children,
+  user,
 }: {
   children: React.ReactNode;
+  user: User;
 }) => {
-  const [user, setUser] = useState<User>(null);
-
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
   );
 };
 

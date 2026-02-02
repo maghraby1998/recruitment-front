@@ -3,11 +3,13 @@ import { gql } from "@apollo/client";
 export const REGISTER_EMPLOYEE = gql`
   mutation RegisterEmployee($input: CreateEmployeeInput!) {
     createEmployee(input: $input) {
-      id
-      firstName
-      lastName
       user {
+        id
         email
+        employee {
+          firstName
+          lastName
+        }
       }
     }
   }
@@ -16,10 +18,12 @@ export const REGISTER_EMPLOYEE = gql`
 export const REGISTER_COMPANY = gql`
   mutation RegisterCompany($input: CreateCompanyInput!) {
     createCompany(input: $input) {
-      id
-      name
       user {
+        id
         email
+        company {
+          name
+        }
       }
     }
   }
@@ -35,7 +39,15 @@ export const LOGIN = gql`
   mutation Login($input: SignInInput!) {
     signIn(input: $input) {
       id
-      userType
+      user_type
+      email
+      employee {
+        firstName
+        lastName
+      }
+      company {
+        name
+      }
     }
   }
 `;

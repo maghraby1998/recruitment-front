@@ -34,7 +34,7 @@ export default function CompanyForm() {
   const router = useRouter();
 
   const [registerCompany, { loading }] = useMutation(REGISTER_COMPANY, {
-    onCompleted: (data) => {
+    onCompleted: (data: any) => {
       router.replace("/");
     },
     onError: (error) => {

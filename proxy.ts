@@ -26,7 +26,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   } else {
     if (!accessToken) {
-      const registerUrl = new URL("/register", request.url);
+      const registerUrl = new URL("/login", request.url);
       return NextResponse.redirect(registerUrl);
     }
 

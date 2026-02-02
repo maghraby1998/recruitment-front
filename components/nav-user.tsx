@@ -43,7 +43,7 @@ export function NavUser({
   const [logOut] = useMutation(LOGOUT, {
     onCompleted: (data: any) => {
       if (data.logOut) {
-        router.replace("/register");
+        router.replace("/login");
       }
     },
   });

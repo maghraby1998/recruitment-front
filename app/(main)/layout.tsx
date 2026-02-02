@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { ApolloProviderComponent } from "@/components/apollo-provider";
-import { AuthContextProvider, useAuth } from "@/components/context-provider";
+import { AuthContextProvider, User } from "@/components/context-provider";
 import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
@@ -53,8 +53,10 @@ export default async function RootLayout({
 }>) {
   const authUser = await fetchAuth();
 
+  const user = authUser?.data?.getAuthUser as User;
+
   return (
-    <AuthContextProvider user={authUser?.data?.getAuthUser ?? {}}>
+    <AuthContextProvider user={user}>
       <SidebarProvider
         style={
           {

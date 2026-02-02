@@ -32,7 +32,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth } from "./context-provider";
+import { useAuth, UserType } from "./context-provider";
 
 const data = {
   user: {
@@ -154,6 +154,27 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const auth = useAuth();
 
+  const employeeLinks = [
+    {
+      title: "Jobs",
+      url: "/jobs",
+      icon: IconDashboard,
+    },
+  ];
+
+  const companyLinks = [
+    {
+      title: "Jobs",
+      url: "/jobs",
+      icon: IconDashboard,
+    },
+    {
+      title: "My Job Posts",
+      url: "/job-posts",
+      icon: IconDashboard,
+    },
+  ];
+
   console.log("auth user ds", auth?.user);
 
   return (
@@ -174,7 +195,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain
+          items={
+            auth?.user?.user_type == UserType.EMPLOYEE
+              ? employeeLinks
+              : companyLinks
+          }
+        />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

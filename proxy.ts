@@ -9,6 +9,9 @@ const PUBLIC_ROUTES = [
   "/login",
 ];
 
+const EMPLOYEE_ROUTES: string[] = [];
+const COMPANY_ROUTES = ["/job-posts"];
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -16,7 +19,10 @@ export function proxy(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 
-  const accessToken = request.cookies.get("access_token")?.value;
+  const authInfoCookie = request.cookies.get("auth_info")?.value;
+  const authInfo = authInfoCookie ? JSON.parse(authInfoCookie) : null;
+
+  const accessToken = authInfo?.accessToken;
 
   if (isPublicRoute) {
     if (accessToken) {
@@ -26,8 +32,35 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   } else {
     if (!accessToken) {
-      const registerUrl = new URL("/login", request.url);
-      return NextResponse.redirect(registerUrl);
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    const userType = authInfo?.user_type;
+
+    const isEmployeeRoute = EMPLOYEE_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
+    const isCompanyRoute = COMPANY_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
+
+    // Redirect employees away from company routes
+    if (userType === "EMPLOYEE" && isCompanyRoute) {
+      return NextResponse.redirect(new URL("/jobs", request.url));
+    }
+
+    // Redirect companies away from employee routes
+    if (userType === "COMPANY" && isEmployeeRoute) {
+      return NextResponse.redirect(new URL("/job-posts", request.url));
+    }
+
+    // Redirect from root to appropriate dashboard
+    if (pathname === "/") {
+      if (userType === "COMPANY") {
+        return NextResponse.redirect(new URL("/jobs", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/jobs", request.url));
+      }
     }
 
     return NextResponse.next();

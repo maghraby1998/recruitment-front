@@ -151,31 +151,31 @@ const data = {
   ],
 };
 
+const employeeLinks = [
+  {
+    title: "Jobs",
+    url: "/jobs",
+    icon: IconDashboard,
+  },
+];
+
+const companyLinks = [
+  {
+    title: "Jobs",
+    url: "/jobs",
+    icon: IconDashboard,
+  },
+  {
+    title: "My Job Posts",
+    url: "/job-posts",
+    icon: IconDashboard,
+  },
+];
+
+export const allLinks = [...employeeLinks, ...companyLinks];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const auth = useAuth();
-
-  const employeeLinks = [
-    {
-      title: "Jobs",
-      url: "/jobs",
-      icon: IconDashboard,
-    },
-  ];
-
-  const companyLinks = [
-    {
-      title: "Jobs",
-      url: "/jobs",
-      icon: IconDashboard,
-    },
-    {
-      title: "My Job Posts",
-      url: "/job-posts",
-      icon: IconDashboard,
-    },
-  ];
-
-  console.log("auth user ds", auth?.user);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

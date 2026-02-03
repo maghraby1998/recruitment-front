@@ -11,7 +11,6 @@ import * as yup from "yup";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN, REGISTER_EMPLOYEE } from "@/app/_graphql/mutations";
 import Link from "next/link";
-import { useAuth } from "@/components/context-provider";
 
 type Inputs = {
   email: string;

@@ -6,4 +6,9 @@ export const client = new ApolloClient({
     credentials: "include",
   }),
   cache: new InMemoryCache(),
+  defaultOptions: {
+    query: {
+      fetchPolicy: "network-only",
+    },
+  },
 });

@@ -13,6 +13,7 @@ import {
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
+  IconPlus,
   IconReport,
   IconSearch,
   IconSettings,
@@ -169,6 +170,8 @@ const companyLinks = [
     title: "My Job Posts",
     url: "/job-posts",
     icon: IconDashboard,
+    actionIcon: IconPlus,
+    actionUrl: "/job-posts/new",
   },
 ];
 

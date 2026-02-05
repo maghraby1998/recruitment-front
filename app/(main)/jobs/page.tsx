@@ -26,7 +26,9 @@ function JobDetails({ job }: { job: JobPost }) {
     <div className="p-6 border-l w-100">
       <h1 className="font-bold text-xl mb-3 capitalize">{job.company.name}</h1>
       <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-2xl font-bold text-cyan-600">{job.title}</h1>
+        <h1 className="text-2xl font-bold text-cyan-600 capitalize">
+          {job.title}
+        </h1>
         <Badge
           style={{
             backgroundColor:
@@ -84,7 +86,7 @@ export default function Jobs() {
           >
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-cyan-600">{jobPost.title}</h2>
+                <h2 className="text-cyan-600 capitalize">{jobPost.title}</h2>
                 <Badge
                   style={{
                     backgroundColor:

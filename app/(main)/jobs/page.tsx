@@ -72,8 +72,8 @@ export default function Jobs() {
   };
 
   return (
-    <div className="flex items-start gap-6 h-full">
-      <div className="flex flex-col gap-3 flex-1 max-w-md">
+    <div className="flex items-start gap-6 h-[90vh]">
+      <div className="flex flex-col gap-3 flex-1 max-w-md h-full overflow-y-auto pr-2">
         {jobPosts?.map((jobPost) => (
           <Card
             key={jobPost.id}
@@ -102,7 +102,7 @@ export default function Jobs() {
         ))}
       </div>
       {selectedJob ? (
-        <div className="w-[300px]">
+        <div className="w-[300px] h-full overflow-y-auto">
           <JobDetails job={selectedJob} />
         </div>
       ) : null}

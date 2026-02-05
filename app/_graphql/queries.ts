@@ -26,3 +26,17 @@ export const GET_MY_JOB_POSTS = gql`
     }
   }
 `;
+
+export const GET_JOB_POSTS = gql`
+  query GetJobPosts {
+    jobPosts {
+      id
+      title
+      description
+      status
+      company {
+        name
+      }
+    }
+  }
+`;

@@ -16,8 +16,8 @@ export const REGISTER_EMPLOYEE = gql`
 `;
 
 export const REGISTER_COMPANY = gql`
-  mutation RegisterCompany($input: CreateCompanyInput!) {
-    createCompany(input: $input) {
+  mutation RegisterCompany($input: CreateCompanyInput!, $image: Upload) {
+    createCompany(input: $input, image: $image) {
       user {
         id
         email

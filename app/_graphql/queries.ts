@@ -36,6 +36,7 @@ export const GET_JOB_POSTS = gql`
       status
       company {
         name
+        imgPath
       }
     }
   }

@@ -1,10 +1,16 @@
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
+
+const httpLink = new UploadHttpLink({
+  uri: "http://localhost:5000/graphql",
+  headers: {
+    "x-apollo-operation-name": "UploadFile",
+  },
+  credentials: "include",
+});
 
 export const client = new ApolloClient({
-  link: new HttpLink({
-    uri: "http://localhost:5000/graphql",
-    credentials: "include",
-  }),
+  link: httpLink,
   cache: new InMemoryCache(),
   defaultOptions: {
     query: {

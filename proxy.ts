@@ -20,6 +20,7 @@ export function proxy(request: NextRequest) {
   );
 
   const authInfoCookie = request.cookies.get("auth_info")?.value;
+
   const authInfo = authInfoCookie ? JSON.parse(authInfoCookie) : null;
 
   const accessToken = authInfo?.accessToken;

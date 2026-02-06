@@ -6,6 +6,8 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -78,7 +80,7 @@ function JobDetails({ job }: { job: JobPost }) {
         <CompanyAvatar company={job.company} />
         <h1 className="font-bold text-xl capitalize">{job.company.name}</h1>
       </div>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 my-3">
         <h1 className="text-2xl font-bold text-cyan-600 capitalize">
           {job.title}
         </h1>
@@ -91,6 +93,12 @@ function JobDetails({ job }: { job: JobPost }) {
           {job.status}
         </Badge>
       </div>
+      <Link
+        className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-fit"
+        href={`/jobs/${job.id}/apply?jobId=${job.id}`}
+      >
+        Apply
+      </Link>
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="text-gray-700">{job.description}</p>

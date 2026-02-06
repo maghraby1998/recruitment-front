@@ -41,3 +41,30 @@ export const GET_JOB_POSTS = gql`
     }
   }
 `;
+
+export const GET_JOB_POST_DETAILS = gql`
+  query GetJobPostDetails($id: ID!) {
+    jobPost(id: $id) {
+      title
+      description
+      company {
+        name
+        imgPath
+      }
+      form {
+        id
+        requireCV
+        questions {
+          id
+          label
+          isRequired
+          type
+          options {
+            id
+            value
+          }
+        }
+      }
+    }
+  }
+`;

@@ -59,3 +59,11 @@ export const CREATE_JOB_POST = gql`
     }
   }
 `;
+
+export const CREATE_JOB_APPLICATIONS = gql`
+  mutation CreateJobApplication($input: ApplyForJobInput) {
+    applyForJob(input: $input) {
+      id
+    }
+  }
+`;

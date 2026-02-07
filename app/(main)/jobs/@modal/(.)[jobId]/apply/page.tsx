@@ -56,15 +56,13 @@ export default function JobApplicationModal({}: {}) {
   });
 
   const onSubmit = (data: any) => {
-    console.log("submitting", data);
-
     const answers = data?.answers ?? [];
 
     const questionsIds = Object.keys(answers);
     applyForJob({
       variables: {
         input: {
-          jobPostId: jobId,
+          jobPostId: Number(jobId),
           answers: questionsIds?.map((questionId) => ({
             questiondId: questionId,
             value: answers?.[questionId],

@@ -94,7 +94,9 @@ function JobDetails({ job }: { job: JobPost }) {
           {job.status}
         </Badge>
       </div>
-      <p>{job.applicationsNumber ?? 0} Applicants</p>
+      <p>
+        <b>{job.applicationsNumber ?? 0}</b> Applicants
+      </p>
       <Link
         className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-fit"
         href={`/jobs/${job.id}/apply?jobId=${job.id}`}

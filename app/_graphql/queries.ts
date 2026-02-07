@@ -38,6 +38,7 @@ export const GET_JOB_POSTS = gql`
         name
         imgPath
       }
+      applicationsNumber
     }
   }
 `;

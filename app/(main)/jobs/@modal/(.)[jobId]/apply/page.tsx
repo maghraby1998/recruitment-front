@@ -62,9 +62,9 @@ export default function JobApplicationModal({}: {}) {
     applyForJob({
       variables: {
         input: {
-          jobPostId: Number(jobId),
+          jobPostId: jobId,
           answers: questionsIds?.map((questionId) => ({
-            questiondId: questionId,
+            questionId: questionId,
             value: answers?.[questionId],
           })),
         },

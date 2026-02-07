@@ -2,22 +2,14 @@
 
 import { Card, CardAction, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Resolver, SubmitHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { CircleArrowLeft } from "lucide-react";
+import { Camera, CircleArrowLeft, X } from "lucide-react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation } from "@apollo/client/react";
 import { REGISTER_EMPLOYEE } from "@/app/_graphql/mutations";
-
-type Inputs = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
 
 const schema = yup
   .object({
@@ -29,8 +21,11 @@ const schema = yup
       .string()
       .oneOf([yup.ref("password")], "Passwords must match")
       .required(),
+    image: yup.mixed<FileList>(),
   })
   .required();
+
+type Inputs = yup.InferType<typeof schema>;
 
 export default function EmployeeForm() {
   const router = useRouter();
@@ -47,10 +42,16 @@ export default function EmployeeForm() {
   const {
     register,
     handleSubmit,
+    watch,
+    resetField,
     formState: { errors },
   } = useForm<Inputs>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as Resolver<Inputs>,
   });
+
+  const selectedImage = watch("image");
+  const imagePreview =
+    selectedImage?.[0] && URL.createObjectURL(selectedImage[0]);
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     registerEmployee({
@@ -62,6 +63,7 @@ export default function EmployeeForm() {
           password: data.password,
           confirmPassword: data.confirmPassword,
         },
+        image: data.image?.[0],
       },
     });
   };
@@ -81,6 +83,45 @@ export default function EmployeeForm() {
             <p>Employee Registration</p>
           </CardTitle>
           <CardContent className="flex flex-col gap-3">
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative">
+                {imagePreview ? (
+                  <>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => resetField("image")}
+                      className="absolute -top-1 -right-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <label
+                    htmlFor="image"
+                    className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
+                  >
+                    <Camera className="h-8 w-8 text-gray-400" />
+                    <span className="mt-1 text-xs text-gray-500">Upload</span>
+                  </label>
+                )}
+                <input
+                  id="image"
+                  {...register("image")}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+              {errors.image?.message ? (
+                <p className="text-red-500 text-sm">{errors.image?.message}</p>
+              ) : null}
+            </div>
+
             <div className="flex flex-col gap-1">
               <label htmlFor="firstName">First Name</label>
               <Input

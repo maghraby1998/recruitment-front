@@ -4,6 +4,7 @@ import { GET_MY_JOB_POSTS } from "@/app/_graphql/queries";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
+import Link from "next/link";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -15,6 +16,7 @@ type JobPost = {
   title: string;
   description: string;
   status: JobPostStatus;
+  applicationsNumber: number;
 };
 
 export default function JobPosts() {
@@ -35,7 +37,7 @@ export default function JobPosts() {
       <div className="flex flex-col gap-3">
         {jobPosts?.map((jobPost) => (
           <Card key={jobPost.id} className="p-5">
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle>
               <div className="flex items-center gap-2">
                 <h2 className="text-cyan-600">{jobPost.title}</h2>
                 <Badge
@@ -47,6 +49,11 @@ export default function JobPosts() {
                   {jobPost.status}
                 </Badge>
               </div>
+              <Link href={`/job-posts/${jobPost.id}/applications`}>
+                <p className="my-2 text-gray-600 font-normal">
+                  <b>{jobPost.applicationsNumber ?? 0}</b> Applicants
+                </p>
+              </Link>
             </CardTitle>
             <CardContent className="p-0">{jobPost.description}</CardContent>
           </Card>

@@ -23,6 +23,7 @@ export const GET_MY_JOB_POSTS = gql`
       title
       description
       status
+      applicationsNumber
     }
   }
 `;
@@ -66,6 +67,26 @@ export const GET_JOB_POST_DETAILS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const GET_JOB_POST_APPLICATIONS = gql`
+  query GetJobPostApplications($jobPostId: ID!) {
+    getJobPostApplications(jobPostId: $jobPostId) {
+      id
+      jobPost {
+        title
+      }
+      employee {
+        firstName
+        lastName
+        imgPath
+        user {
+          email
+        }
+      }
+      status
     }
   }
 `;

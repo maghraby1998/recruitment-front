@@ -6,6 +6,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import UserAvatar from "@/components/ui/company-avatar";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
@@ -14,11 +15,34 @@ enum ApplicationStatus {
   CANCELLED = "CANCELLED",
 }
 
-type Applicaion = {
+export type Applicaion = {
   id: number;
   jobPost: {
     title: string;
+    company: {
+      name: string;
+      imgPath: string;
+    };
+    form: {
+      id: string;
+      requireCV: boolean;
+      questions: {
+        id: string;
+        label: string;
+        isRequired: boolean;
+        type: "TEXT" | "RADIO" | "TEXTAREA";
+        options: {
+          id: string;
+          value: string;
+        }[];
+      }[];
+    };
   };
+  answers: {
+    id: string;
+    value: string;
+    questionId: string;
+  }[];
   employee: {
     firstName: string;
     lastName: string;
@@ -26,6 +50,10 @@ type Applicaion = {
     user: {
       email: string;
     };
+  };
+  company: {
+    name: string;
+    imgPath: string;
   };
   status: string;
 };
@@ -108,7 +136,11 @@ export default function JobPostApplications() {
             className={`p-5 cursor-pointer transition-all hover:shadow-md`}
           >
             <div className="flex items-center gap-3">
-              <EmployeeAvatar employee={application.employee} size="lg" />
+              <UserAvatar
+                userType="EMPLOYEE"
+                employee={application.employee}
+                size="lg"
+              />
               <div className="flex-1">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

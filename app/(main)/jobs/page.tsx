@@ -8,6 +8,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import UserAvatar from "@/components/ui/company-avatar";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -26,59 +27,11 @@ type JobPost = {
   applicationsNumber: number;
 };
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join(".")
-    .toUpperCase()
-    .slice(0, 3);
-}
-
-function CompanyAvatar({
-  company,
-  size = "md",
-}: {
-  company: JobPost["company"];
-  size?: "sm" | "md" | "lg";
-}) {
-  const sizeConfig = {
-    sm: { className: "text-xs", pixels: 32 },
-    md: { className: "text-sm", pixels: 40 },
-    lg: { className: "text-base", pixels: 56 },
-  };
-
-  const { className, pixels } = sizeConfig[size];
-
-  if (company.imgPath) {
-    return (
-      <Image
-        src={`http://localhost:5000${company.imgPath}`}
-        alt={company.name}
-        width={pixels}
-        height={pixels}
-        className="rounded"
-        style={{ width: pixels, height: pixels, objectFit: "cover" }}
-        unoptimized
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${className} rounded-full bg-cyan-100 text-cyan-700 font-semibold flex items-center justify-center`}
-      style={{ width: pixels, height: pixels }}
-    >
-      {getInitials(company.name)}
-    </div>
-  );
-}
-
 function JobDetails({ job }: { job: JobPost }) {
   return (
     <div className="p-6 border-l w-100 flex-1">
       <div className="flex items-center gap-3 mb-3">
-        <CompanyAvatar company={job.company} />
+        <UserAvatar company={job.company} userType="COMPANY" />
         <h1 className="font-bold text-xl capitalize">{job.company.name}</h1>
       </div>
       <div className="flex items-center gap-3 my-3">
@@ -150,7 +103,11 @@ export default function Jobs() {
             onClick={() => handleJobSelect(jobPost.id)}
           >
             <div className="flex items-center gap-3">
-              <CompanyAvatar company={jobPost.company} size="lg" />
+              <UserAvatar
+                company={jobPost.company}
+                userType="COMPANY"
+                size="lg"
+              />
               <div className="flex-1">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

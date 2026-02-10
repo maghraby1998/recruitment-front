@@ -158,6 +158,11 @@ const employeeLinks = [
     url: "/jobs",
     icon: IconDashboard,
   },
+  {
+    title: "My Applications",
+    url: "/my-applications",
+    icon: IconDashboard,
+  },
 ];
 
 const companyLinks = [

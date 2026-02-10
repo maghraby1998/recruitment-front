@@ -90,3 +90,60 @@ export const GET_JOB_POST_APPLICATIONS = gql`
     }
   }
 `;
+
+export const GET_MY_APPLICATIONS = gql`
+  query GetJobPostApplications {
+    getMyApplications {
+      id
+      jobPost {
+        title
+        company {
+          name
+          imgPath
+        }
+      }
+      status
+    }
+  }
+`;
+
+export const GET_APPLICATION_ANSWERS_DETAILS = gql`
+  query GetApplication($id: ID!) {
+    application(id: $id) {
+      id
+      jobPost {
+        title
+        company {
+          name
+          imgPath
+        }
+        form {
+          id
+          requireCV
+          questions {
+            id
+            label
+            isRequired
+            type
+            options {
+              id
+              value
+            }
+          }
+        }
+      }
+      employee {
+        firstName
+        lastName
+        imgPath
+      }
+      CVFilePath
+      answers {
+        id
+        value
+        questionId
+      }
+      status
+    }
+  }
+`;

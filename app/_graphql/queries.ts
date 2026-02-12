@@ -40,6 +40,7 @@ export const GET_JOB_POSTS = gql`
         imgPath
       }
       applicationsNumber
+      created_at
     }
   }
 `;

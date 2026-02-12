@@ -9,6 +9,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import UserAvatar from "@/components/ui/company-avatar";
+import { useAuth } from "@/components/context-provider";
+import moment from "moment";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -25,16 +27,19 @@ type JobPost = {
     imgPath: string;
   };
   applicationsNumber: number;
+  created_at: Date;
 };
 
 function JobDetails({ job }: { job: JobPost }) {
+  const authUser = useAuth();
+
   return (
     <div className="p-6 border-l w-100 flex-1">
       <div className="flex items-center gap-3 mb-3">
         <UserAvatar company={job.company} userType="COMPANY" />
         <h1 className="font-bold text-xl capitalize">{job.company.name}</h1>
       </div>
-      <div className="flex items-center gap-3 my-3">
+      <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-cyan-600 capitalize">
           {job.title}
         </h1>
@@ -47,16 +52,19 @@ function JobDetails({ job }: { job: JobPost }) {
           {job.status}
         </Badge>
       </div>
-      <p>
+      <p className="text-gray-600 mb-2">{moment(job?.created_at).fromNow()}</p>{" "}
+      <p className="font-semibold text-lg">
         <b>{job.applicationsNumber ?? 0}</b> Applicants
       </p>
-      <Link
-        className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-fit"
-        href={`/jobs/${job.id}/apply?jobId=${job.id}`}
-      >
-        Apply
-      </Link>
-      <div className="mb-6">
+      {authUser?.user?.user_type == "EMPLOYEE" ? (
+        <Link
+          className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-fit"
+          href={`/jobs/${job.id}/apply?jobId=${job.id}`}
+        >
+          Apply
+        </Link>
+      ) : null}
+      <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="text-gray-700">{job.description}</p>
       </div>
@@ -128,6 +136,9 @@ export default function Jobs() {
                 </CardTitle>
                 <CardContent className="p-0">
                   {jobPost.company.name}
+                  <p className="text-gray-500">
+                    {moment(jobPost?.created_at).fromNow()}
+                  </p>
                 </CardContent>
               </div>
             </div>

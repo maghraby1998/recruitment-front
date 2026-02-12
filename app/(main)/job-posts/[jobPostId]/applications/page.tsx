@@ -7,6 +7,7 @@ import { useQuery } from "@apollo/client/react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import UserAvatar from "@/components/ui/company-avatar";
+import Link from "next/link";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
@@ -109,7 +110,6 @@ function EmployeeAvatar({
 
 export default function JobPostApplications() {
   const params = useParams();
-
   const jobPostId = params?.jobPostId;
 
   const { data } = useQuery(GET_JOB_POST_APPLICATIONS, {
@@ -132,46 +132,51 @@ export default function JobPostApplications() {
     <div className="flex items-start gap-6 h-[85vh]">
       <div className="flex flex-col gap-3 flex-1 max-w-md h-full overflow-y-auto pr-2">
         {applications?.map((application) => (
-          <Card
+          <Link
             key={application.id}
-            className={`p-5 cursor-pointer transition-all hover:shadow-md`}
+            href={`/job-posts/${jobPostId}/applications/${application?.id}`}
           >
-            <div className="flex items-center gap-3">
-              <UserAvatar
-                userType="EMPLOYEE"
-                employee={application.employee}
-                size="lg"
-              />
-              <div className="flex-1">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-cyan-600 capitalize">
-                      {application.employee.firstName +
-                        " " +
-                        application.employee.lastName}
-                    </h2>
-                    <Badge
-                      style={{
-                        backgroundColor:
-                          application.status == ApplicationStatus.PENDING
-                            ? "orange"
-                            : application.status == ApplicationStatus.ACCEPTED
-                              ? "green"
-                              : application.status == ApplicationStatus.REJECTED
-                                ? "red"
-                                : "orangered",
-                      }}
-                    >
-                      {application.status}
-                    </Badge>
-                  </div>
-                </CardTitle>
-                <CardContent className="p-0 text-sm my-1 text-gray-600">
-                  {application.jobPost.title}
-                </CardContent>
+            <Card
+              className={`p-5 cursor-pointer transition-all hover:shadow-md`}
+            >
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  userType="EMPLOYEE"
+                  employee={application.employee}
+                  size="lg"
+                />
+                <div className="flex-1">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-cyan-600 capitalize">
+                        {application.employee.firstName +
+                          " " +
+                          application.employee.lastName}
+                      </h2>
+                      <Badge
+                        style={{
+                          backgroundColor:
+                            application.status == ApplicationStatus.PENDING
+                              ? "orange"
+                              : application.status == ApplicationStatus.ACCEPTED
+                                ? "green"
+                                : application.status ==
+                                    ApplicationStatus.REJECTED
+                                  ? "red"
+                                  : "orangered",
+                        }}
+                      >
+                        {application.status}
+                      </Badge>
+                    </div>
+                  </CardTitle>
+                  <CardContent className="p-0 text-sm my-1 text-gray-600">
+                    {application.jobPost.title}
+                  </CardContent>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

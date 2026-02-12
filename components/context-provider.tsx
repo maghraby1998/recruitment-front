@@ -15,10 +15,12 @@ export type User = {
     id: number;
     firstName: string;
     lastName: string;
+    imgPath: string;
   };
   company: {
     id: number;
     name: string;
+    imgPath: string;
   };
 } | null;
 

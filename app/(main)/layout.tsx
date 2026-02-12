@@ -32,9 +32,11 @@ const fetchAuth = async () => {
             employee {
               firstName
               lastName
+              imgPath
             }
             company {
               name
+              imgPath
             }
           }
         }

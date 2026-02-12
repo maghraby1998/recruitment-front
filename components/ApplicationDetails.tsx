@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import React from "react";
+import { FileText, ExternalLink } from "lucide-react";
 import { useQuery } from "@apollo/client/react";
 import { GET_APPLICATION_ANSWERS_DETAILS } from "@/app/_graphql/queries";
 import { Applicaion } from "@/app/(main)/job-posts/[jobPostId]/applications/page";
@@ -36,8 +37,6 @@ const ApplicationDetailsComp: React.FC<Props> = ({
   const questions = data?.application?.jobPost?.form?.questions ?? [];
   const answers = data?.application?.answers ?? [];
 
-  console.log("data", data?.application);
-
   const handleClose = () => {
     router.back();
   };
@@ -50,6 +49,19 @@ const ApplicationDetailsComp: React.FC<Props> = ({
         </DialogHeader>
 
         <div className="flex flex-col">
+          {data?.application?.CVFilePath && (
+            <a
+              target="_blank"
+              href={`http://localhost:5000${data?.application?.CVFilePath}`}
+              className="flex items-center gap-3 rounded-lg border p-3 mb-3 hover:bg-muted transition-colors"
+            >
+              <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+              <span className="truncate text-sm font-medium">
+                Resume / CV
+              </span>
+              <ExternalLink className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+            </a>
+          )}
           {questions?.map((question, index) => (
             <div key={question?.id}>
               {index != 0 ? <hr className="bg-black h-[1px] my-2" /> : null}

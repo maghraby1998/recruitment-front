@@ -61,8 +61,8 @@ export const CREATE_JOB_POST = gql`
 `;
 
 export const CREATE_JOB_APPLICATIONS = gql`
-  mutation CreateJobApplication($input: ApplyForJobInput) {
-    applyForJob(input: $input) {
+  mutation CreateJobApplication($input: ApplyForJobInput, $CVFilePdf: Upload) {
+    applyForJob(input: $input, CVFilePdf: $CVFilePdf) {
       id
     }
   }

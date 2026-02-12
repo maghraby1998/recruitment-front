@@ -43,6 +43,7 @@ export type Applicaion = {
     value: string;
     questionId: string;
   }[];
+  CVFilePath: string;
   employee: {
     firstName: string;
     lastName: string;

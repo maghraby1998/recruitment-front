@@ -13,12 +13,20 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CREATE_JOB_APPLICATIONS } from "@/app/_graphql/mutations";
+import { FileText, Upload, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function JobApplicationModal({}: {}) {
   const router = useRouter();
   const params = useParams<{ jobId: string }>();
 
-  const { register, handleSubmit } = useForm<any>();
+  const { register, handleSubmit, watch, setValue } = useForm<any>();
 
   const jobId = params?.jobId;
   const handleClose = () => {
@@ -56,6 +64,8 @@ export default function JobApplicationModal({}: {}) {
   });
 
   const onSubmit = (data: any) => {
+    console.log("tt", data?.CVFilePdf?.[0]);
+
     const answers = data?.answers ?? [];
 
     const questionsIds = Object.keys(answers);
@@ -68,6 +78,7 @@ export default function JobApplicationModal({}: {}) {
             value: answers?.[questionId],
           })),
         },
+        CVFilePdf: data?.CVFilePdf?.[0],
       },
     });
   };
@@ -110,19 +121,63 @@ export default function JobApplicationModal({}: {}) {
                   >
                     {question.label}
                   </label>
-                  <select
-                    id={question.id}
-                    {...register(`answers.${question.id}`)}
+                  <Select
+                    value={watch(`answers.${question.id}`) ?? ""}
+                    onValueChange={(val) =>
+                      setValue(`answers.${question.id}`, val)
+                    }
                   >
-                    {question.options?.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.value}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {question.options?.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.value}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               ),
             )}
+          </div>
+
+          <div className="mb-3">
+            {data?.jobPost?.form?.requireCV ? (
+              watch("CVFilePdf")?.[0] ? (
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <span className="truncate text-sm">
+                    {watch("CVFilePdf")[0].name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setValue("CVFilePdf", null)}
+                    className="ml-auto shrink-0 rounded-full p-1 hover:bg-muted"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <label
+                  htmlFor="pdf"
+                  className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Upload className="h-6 w-6" />
+                  <span className="text-sm font-medium">
+                    Upload your CV (PDF)
+                  </span>
+                  <input
+                    id="pdf"
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    {...register("CVFilePdf")}
+                  />
+                </label>
+              )
+            ) : null}
           </div>
 
           <Button type="submit">Submit</Button>

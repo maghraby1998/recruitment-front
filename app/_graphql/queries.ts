@@ -17,13 +17,23 @@ export const GET_AUTH_USER = gql`
 `;
 
 export const GET_MY_JOB_POSTS = gql`
-  query GetMyPostJobs {
-    myJobPosts {
-      id
-      title
-      description
-      status
-      applicationsNumber
+  query GetMyPostJobs($pagination: PaginationInput) {
+    myJobPosts(pagination: $pagination) {
+      data {
+        id
+        title
+        description
+        status
+        applicationsNumber
+      }
+      meta {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
     }
   }
 `;

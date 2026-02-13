@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -20,17 +22,34 @@ type JobPost = {
 };
 
 export default function JobPosts() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`/job-posts?${params.toString()}`);
+  };
+
   const { data, loading } = useQuery(GET_MY_JOB_POSTS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
+    variables: {
+      pagination: { page, limit: 10 },
+    },
   }) as {
     data: {
-      myJobPosts: [JobPost];
+      myJobPosts: {
+        data: JobPost[];
+        meta: PaginationMeta;
+      };
     };
     loading: any;
   };
 
-  const jobPosts = data?.myJobPosts as [JobPost];
+  const jobPosts = data?.myJobPosts?.data;
+  const paginationMeta = data?.myJobPosts?.meta;
 
   return (
     <div>
@@ -58,6 +77,9 @@ export default function JobPosts() {
             <CardContent className="p-0">{jobPost.description}</CardContent>
           </Card>
         ))}
+        {paginationMeta && (
+          <Pagination meta={paginationMeta} onPageChange={setPage} />
+        )}
       </div>
     </div>
   );

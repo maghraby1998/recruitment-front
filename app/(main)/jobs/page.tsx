@@ -1,6 +1,6 @@
 "use client";
 
-import { GET_JOB_POSTS, GET_MY_JOB_POSTS } from "@/app/_graphql/queries";
+import { GET_JOB_POSTS } from "@/app/_graphql/queries";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";

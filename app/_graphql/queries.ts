@@ -41,6 +41,7 @@ export const GET_JOB_POSTS = gql`
       }
       applicationsNumber
       created_at
+      canApply
     }
   }
 `;
@@ -113,6 +114,7 @@ export const GET_APPLICATION_ANSWERS_DETAILS = gql`
     application(id: $id) {
       id
       jobPost {
+        id
         title
         company {
           name

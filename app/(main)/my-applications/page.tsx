@@ -10,7 +10,7 @@ import Link from "next/link";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
-  ACCEPTED = "ACCEPTED",
+  IN_CONSIDERATION = "IN_CONSIDERATION",
   REJECTED = "REJECTED",
   CANCELLED = "CANCELLED",
 }
@@ -117,7 +117,8 @@ export default function MyApplications() {
                           backgroundColor:
                             application.status == ApplicationStatus.PENDING
                               ? "orange"
-                              : application.status == ApplicationStatus.ACCEPTED
+                              : application.status ==
+                                  ApplicationStatus.IN_CONSIDERATION
                                 ? "green"
                                 : application.status ==
                                     ApplicationStatus.REJECTED

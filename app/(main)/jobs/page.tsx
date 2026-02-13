@@ -28,6 +28,7 @@ type JobPost = {
   };
   applicationsNumber: number;
   created_at: Date;
+  canApply: boolean;
 };
 
 function JobDetails({ job }: { job: JobPost }) {
@@ -57,12 +58,18 @@ function JobDetails({ job }: { job: JobPost }) {
         <b>{job.applicationsNumber ?? 0}</b> Applicants
       </p>
       {authUser?.user?.user_type == "EMPLOYEE" ? (
-        <Link
-          className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-fit"
-          href={`/jobs/${job.id}/apply?jobId=${job.id}`}
-        >
-          Apply
-        </Link>
+        job?.canApply ? (
+          <Link
+            className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-[80px] text-center"
+            href={`/jobs/${job.id}/apply?jobId=${job.id}`}
+          >
+            Apply
+          </Link>
+        ) : (
+          <p className="my-3 bg-slate-500/50 text-white px-2 py-1 rounded block w-[80px] text-center">
+            Applied
+          </p>
+        )
       ) : null}
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Description</h2>

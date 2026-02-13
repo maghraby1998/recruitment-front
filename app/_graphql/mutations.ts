@@ -67,3 +67,11 @@ export const CREATE_JOB_APPLICATIONS = gql`
     }
   }
 `;
+
+export const UPDATE_APPLICATION_STATUS = gql`
+  mutation UpdateApplicationStatus($input: UpdateApplicationStatusInput) {
+    updateApplicationStatus(input: $input) {
+      id
+    }
+  }
+`;

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { GET_JOB_POST_DETAILS } from "@/app/_graphql/queries";
+import { GET_JOB_POST_DETAILS, GET_JOB_POSTS } from "@/app/_graphql/queries";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,7 @@ export default function JobApplicationModal({}: {}) {
         handleClose();
       }
     },
+    refetchQueries: [{ query: GET_JOB_POSTS }],
   });
 
   const onSubmit = (data: any) => {

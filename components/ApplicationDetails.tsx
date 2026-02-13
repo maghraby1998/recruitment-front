@@ -9,9 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import React from "react";
 import { FileText, ExternalLink } from "lucide-react";
-import { useQuery } from "@apollo/client/react";
-import { GET_APPLICATION_ANSWERS_DETAILS } from "@/app/_graphql/queries";
+import { useMutation, useQuery } from "@apollo/client/react";
+import {
+  GET_APPLICATION_ANSWERS_DETAILS,
+  GET_JOB_POST_APPLICATIONS,
+  GET_MY_APPLICATIONS,
+} from "@/app/_graphql/queries";
 import { Applicaion } from "@/app/(main)/job-posts/[jobPostId]/applications/page";
+import { Button } from "./ui/button";
+import { UPDATE_APPLICATION_STATUS } from "@/app/_graphql/mutations";
 
 interface Props {
   applicationId: string;
@@ -41,6 +47,34 @@ const ApplicationDetailsComp: React.FC<Props> = ({
     router.back();
   };
 
+  const [updateStatus] = useMutation(UPDATE_APPLICATION_STATUS, {
+    onCompleted: () => {
+      router.back();
+    },
+    refetchQueries:
+      userType == "COMPANY"
+        ? [
+            {
+              query: GET_JOB_POST_APPLICATIONS,
+              variables: {
+                jobPostId: data?.application?.jobPost?.id,
+              },
+            },
+          ]
+        : [{ query: GET_MY_APPLICATIONS }],
+  });
+
+  const handleUpdateApplicationStatus = (status: Applicaion["status"]) => {
+    updateStatus({
+      variables: {
+        input: {
+          id: applicationId,
+          status,
+        },
+      },
+    });
+  };
+
   return (
     <Dialog open onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
@@ -56,9 +90,7 @@ const ApplicationDetailsComp: React.FC<Props> = ({
               className="flex items-center gap-3 rounded-lg border p-3 mb-3 hover:bg-muted transition-colors"
             >
               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-              <span className="truncate text-sm font-medium">
-                Resume / CV
-              </span>
+              <span className="truncate text-sm font-medium">Resume / CV</span>
               <ExternalLink className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
             </a>
           )}
@@ -98,6 +130,35 @@ const ApplicationDetailsComp: React.FC<Props> = ({
               </div>
             </div>
           ))}
+
+          {data?.application?.status == "PENDING" ? (
+            userType == "EMPLOYEE" ? (
+              <div className="my-3 ms-auto">
+                <Button
+                  variant={"destructive"}
+                  onClick={() => handleUpdateApplicationStatus("CANCELLED")}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="my-3 flex items-center gap-3 ms-auto">
+                <Button
+                  variant={"destructive"}
+                  onClick={() => handleUpdateApplicationStatus("REJECTED")}
+                >
+                  Reject
+                </Button>
+                <Button
+                  onClick={() =>
+                    handleUpdateApplicationStatus("IN_CONSIDERATION")
+                  }
+                >
+                  Consider
+                </Button>
+              </div>
+            )
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

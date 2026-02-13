@@ -29,19 +29,29 @@ export const GET_MY_JOB_POSTS = gql`
 `;
 
 export const GET_JOB_POSTS = gql`
-  query GetJobPosts {
-    jobPosts {
-      id
-      title
-      description
-      status
-      company {
-        name
-        imgPath
+  query GetJobPosts($pagination: PaginationInput) {
+    jobPosts(pagination: $pagination) {
+      data {
+        id
+        title
+        description
+        status
+        company {
+          name
+          imgPath
+        }
+        applicationsNumber
+        created_at
+        canApply
       }
-      applicationsNumber
-      created_at
-      canApply
+      meta {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
     }
   }
 `;
@@ -74,37 +84,57 @@ export const GET_JOB_POST_DETAILS = gql`
 `;
 
 export const GET_JOB_POST_APPLICATIONS = gql`
-  query GetJobPostApplications($jobPostId: ID!) {
-    getJobPostApplications(jobPostId: $jobPostId) {
-      id
-      jobPost {
-        title
-      }
-      employee {
-        firstName
-        lastName
-        imgPath
-        user {
-          email
+  query GetJobPostApplications($jobPostId: ID!, $pagination: PaginationInput) {
+    getJobPostApplications(jobPostId: $jobPostId, pagination: $pagination) {
+      data {
+        id
+        jobPost {
+          title
         }
+        employee {
+          firstName
+          lastName
+          imgPath
+          user {
+            email
+          }
+        }
+        status
       }
-      status
+      meta {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
     }
   }
 `;
 
 export const GET_MY_APPLICATIONS = gql`
-  query GetJobPostApplications {
-    getMyApplications {
-      id
-      jobPost {
-        title
-        company {
-          name
-          imgPath
+  query GetMyApplications($pagination: PaginationInput) {
+    getMyApplications(pagination: $pagination) {
+      data {
+        id
+        jobPost {
+          title
+          company {
+            name
+            imgPath
+          }
         }
+        status
       }
-      status
+      meta {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
     }
   }
 `;

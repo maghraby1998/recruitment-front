@@ -4,10 +4,11 @@ import { GET_JOB_POST_APPLICATIONS } from "@/app/_graphql/queries";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import UserAvatar from "@/components/ui/company-avatar";
 import Link from "next/link";
+import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
@@ -112,22 +113,36 @@ function EmployeeAvatar({
 export default function JobPostApplications() {
   const params = useParams();
   const jobPostId = params?.jobPostId;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = (newPage: number) => {
+    const urlParams = new URLSearchParams(searchParams);
+    urlParams.set("page", newPage.toString());
+    router.push(`/job-posts/${jobPostId}/applications?${urlParams.toString()}`);
+  };
 
   const { data } = useQuery(GET_JOB_POST_APPLICATIONS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
     variables: {
       jobPostId,
+      pagination: { page, limit: 10 },
     },
     skip: !jobPostId,
   }) as {
     data: {
-      getJobPostApplications: [Applicaion];
+      getJobPostApplications: {
+        data: Applicaion[];
+        meta: PaginationMeta;
+      };
     };
     loading: boolean;
   };
 
-  const applications = data?.getJobPostApplications as [Applicaion];
+  const applications = data?.getJobPostApplications?.data;
+  const paginationMeta = data?.getJobPostApplications?.meta;
 
   return (
     <div className="flex items-start gap-6 h-[85vh]">
@@ -180,6 +195,9 @@ export default function JobPostApplications() {
             </Card>
           </Link>
         ))}
+        {paginationMeta && (
+          <Pagination meta={paginationMeta} onPageChange={setPage} />
+        )}
       </div>
     </div>
   );

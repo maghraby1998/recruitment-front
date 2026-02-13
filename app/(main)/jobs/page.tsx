@@ -11,6 +11,7 @@ import Link from "next/link";
 import UserAvatar from "@/components/ui/company-avatar";
 import { useAuth } from "@/components/context-provider";
 import moment from "moment";
+import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -82,18 +83,32 @@ function JobDetails({ job }: { job: JobPost }) {
 export default function Jobs() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`/jobs?${params.toString()}`);
+  };
 
   const { data } = useQuery(GET_JOB_POSTS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
+    variables: {
+      pagination: { page, limit: 10 },
+    },
   }) as {
     data: {
-      jobPosts: [JobPost];
+      jobPosts: {
+        data: JobPost[];
+        meta: PaginationMeta;
+      };
     };
     loading: boolean;
   };
 
-  const jobPosts = data?.jobPosts as [JobPost];
+  const jobPosts = data?.jobPosts?.data;
+  const paginationMeta = data?.jobPosts?.meta;
 
   const selectedJobId = searchParams.get("jobId");
   const selectedJob = jobPosts?.find((job) => job.id == Number(selectedJobId));
@@ -151,6 +166,11 @@ export default function Jobs() {
             </div>
           </Card>
         ))}
+        {paginationMeta && (
+          <>
+            <Pagination meta={paginationMeta} onPageChange={setPage} />
+          </>
+        )}
       </div>
       {selectedJob ? <JobDetails job={selectedJob} /> : null}
     </div>

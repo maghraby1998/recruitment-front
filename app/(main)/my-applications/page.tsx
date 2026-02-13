@@ -7,6 +7,8 @@ import UserAvatar from "@/components/ui/company-avatar";
 import { useQuery } from "@apollo/client/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
@@ -76,18 +78,34 @@ function CompanyAvatar({
 }
 
 export default function MyApplications() {
-  1;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+
+  const setPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`/my-applications?${params.toString()}`);
+  };
+
   const { data } = useQuery(GET_MY_APPLICATIONS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
+    variables: {
+      pagination: { page, limit: 10 },
+    },
   }) as {
     data: {
-      getMyApplications: [Applicaion];
+      getMyApplications: {
+        data: Applicaion[];
+        meta: PaginationMeta;
+      };
     };
     loading: boolean;
   };
 
-  const applications = data?.getMyApplications as [Applicaion];
+  const applications = data?.getMyApplications?.data;
+  const paginationMeta = data?.getMyApplications?.meta;
 
   return (
     <div className="flex items-start gap-6 h-[85vh]">
@@ -138,6 +156,9 @@ export default function MyApplications() {
             </Card>
           </Link>
         ))}
+        {paginationMeta && (
+          <Pagination meta={paginationMeta} onPageChange={setPage} />
+        )}
       </div>
     </div>
   );

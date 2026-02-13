@@ -8,9 +8,15 @@ export const GET_AUTH_USER = gql`
       employee {
         firstName
         lastName
+        imgPath
+        position {
+          id
+          title
+        }
       }
       company {
         name
+        imgPath
       }
     }
   }

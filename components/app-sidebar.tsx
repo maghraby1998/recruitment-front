@@ -180,7 +180,14 @@ const companyLinks = [
   },
 ];
 
-export const allLinks = [...employeeLinks, ...companyLinks];
+export const allLinks = [
+  ...employeeLinks,
+  ...companyLinks,
+  {
+    title: "Account",
+    url: "/account",
+  },
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const auth = useAuth();

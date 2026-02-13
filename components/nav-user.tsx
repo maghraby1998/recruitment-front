@@ -28,6 +28,7 @@ import { useMutation } from "@apollo/client/react";
 import { LOGOUT } from "@/app/_graphql/mutations";
 import { useRouter } from "next/navigation";
 import { User, UserType } from "./context-provider";
+import Link from "next/link";
 
 export function NavUser({ user }: { user: User }) {
   const router = useRouter();
@@ -100,10 +101,12 @@ export function NavUser({ user }: { user: User }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem>
+              <Link href={"/account"}>
+                <DropdownMenuItem>
+                  <IconUserCircle />
+                  Account
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>
                 <IconCreditCard />
                 Billing

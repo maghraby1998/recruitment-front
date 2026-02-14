@@ -75,3 +75,11 @@ export const UPDATE_APPLICATION_STATUS = gql`
     }
   }
 `;
+
+export const CREATE_EMPLOYEE_SKILL = gql`
+  mutation CreateSkill($input: CreateSkillInput) {
+    createSkill(input: $input) {
+      id
+    }
+  }
+`;

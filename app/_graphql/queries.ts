@@ -196,3 +196,21 @@ export const GET_APPLICATION_ANSWERS_DETAILS = gql`
     }
   }
 `;
+
+export const GET_MY_SKILLS = gql`
+  query GetMySkills {
+    getMySkills {
+      id
+      name
+    }
+  }
+`;
+
+export const GET_ALL_SKILLS = gql`
+  query GetAllSkills($search: String) {
+    skills(search: $search) {
+      id
+      name
+    }
+  }
+`;

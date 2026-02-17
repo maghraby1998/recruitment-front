@@ -59,6 +59,10 @@ export const GET_JOB_POSTS = gql`
         applicationsNumber
         created_at
         canApply
+        skills {
+          id
+          name
+        }
       }
       meta {
         totalItems

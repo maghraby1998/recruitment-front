@@ -6,14 +6,19 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { CREATE_JOB_POST } from "@/app/_graphql/mutations";
+import { useState } from "react";
+import { Skill } from "@/components/employee-skills-section";
+import { GET_ALL_SKILLS } from "@/app/_graphql/queries";
 
 type QuestionType = "TEXT" | "TEXTAREA" | "RADIO";
 
 type Inputs = {
   title: string;
   description: string;
+  skills: { id: number; name: string }[];
+  skillNames: string[];
   form?: {
     requireCV?: boolean;
     questions?: {
@@ -31,6 +36,16 @@ const schema = yup
   .object({
     title: yup.string().required(),
     description: yup.string().max(500).required(),
+    skills: yup
+      .array()
+      .of(
+        yup.object({
+          id: yup.number().required(),
+          name: yup.string().required(),
+        }),
+      )
+      .optional(),
+    skillNames: yup.array().of(yup.string()).optional(),
     form: yup
       .object({
         requireCV: yup.boolean().optional(),
@@ -183,6 +198,16 @@ function QuestionItem({
 export default function CreateJobPost() {
   const router = useRouter();
 
+  const [skillName, setSkillName] = useState("");
+
+  const { data } = useQuery<{ skills: Skill[] }>(GET_ALL_SKILLS, {
+    fetchPolicy: "network-only",
+    skip: !skillName,
+    variables: {
+      search: skillName,
+    },
+  });
+
   const [createJobPost, { loading }] = useMutation(CREATE_JOB_POST, {
     onCompleted: () => {
       router.replace("/job-posts");
@@ -198,9 +223,12 @@ export default function CreateJobPost() {
     control,
     watch,
     formState: { errors },
+    setValue,
   } = useForm<Inputs>({
     resolver: yupResolver(schema) as any,
   });
+
+  console.log("data", watch("skills"), watch("skillNames"));
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -213,11 +241,18 @@ export default function CreateJobPost() {
         input: {
           title: data.title,
           description: data.description,
+          skillsIds: data.skills.map((skill) => skill.id),
+          skillsNames: data.skillNames,
           form: data.form,
         },
       },
     });
   };
+
+  const allSkillsOptions = [
+    { id: null, name: skillName },
+    ...(data?.skills ?? []),
+  ];
 
   return (
     <div>
@@ -241,6 +276,65 @@ export default function CreateJobPost() {
           {errors.description?.message ? (
             <p className="text-red-500">{errors.description?.message}</p>
           ) : null}
+        </div>
+
+        <div className="relative">
+          <label className="mb-1 block" htmlFor="title">
+            Skills
+          </label>
+          <Input
+            id="skill"
+            value={skillName}
+            onChange={(e) => setSkillName(e.target.value ?? "")}
+            placeholder="Title"
+          />
+
+          {allSkillsOptions && allSkillsOptions.length > 0 && skillName && (
+            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+              {allSkillsOptions.map((skill) => (
+                <li
+                  key={skill.id}
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    if (skill.id) {
+                      setValue("skills", [
+                        ...(watch("skills") ?? []),
+                        { id: skill.id, name: skill.name },
+                      ]);
+                    } else {
+                      setValue("skillNames", [
+                        ...(watch("skillNames") ?? []),
+                        skill.name.toString(),
+                      ]);
+                    }
+                    setSkillName("");
+                  }}
+                >
+                  {skill?.name}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex flex-wrap gap-3 mt-3">
+            {[...(watch("skillNames") ?? [])]?.map((skillName) => (
+              <p
+                className="bg-slate-500 text-white w-fit p-2 rounded-full px-5"
+                key={skillName}
+              >
+                {skillName}
+              </p>
+            ))}
+
+            {[...(watch("skills") ?? [])]?.map((skill) => (
+              <p
+                className="bg-slate-500 text-white w-fit p-2 rounded-full px-5"
+                key={skill?.id}
+              >
+                {skill?.name}
+              </p>
+            ))}
+          </div>
         </div>
 
         <div className="mb-4">

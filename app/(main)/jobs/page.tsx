@@ -12,6 +12,7 @@ import UserAvatar from "@/components/ui/company-avatar";
 import { useAuth } from "@/components/context-provider";
 import moment from "moment";
 import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
+import { Skill } from "@/components/employee-skills-section";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -30,6 +31,7 @@ type JobPost = {
   applicationsNumber: number;
   created_at: Date;
   canApply: boolean;
+  skills: Skill[];
 };
 
 function JobDetails({ job }: { job: JobPost }) {
@@ -75,6 +77,19 @@ function JobDetails({ job }: { job: JobPost }) {
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="text-gray-700">{job.description}</p>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-2">Skills</h2>
+        <div className="flex flex-wrap gap-2">
+          {job.skills.map((skill) => (
+            <p
+              className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm"
+              key={skill.id}
+            >
+              {skill.name}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );

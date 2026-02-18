@@ -36,11 +36,13 @@ const UserAvatar = ({
   employee,
   userType,
   size = "md",
+  customSize,
 }: {
   company?: JobPost["company"];
   employee?: JobPost["employee"];
   size?: "sm" | "md" | "lg";
   userType: "EMPLOYEE" | "COMPANY";
+  customSize?: { pixels: number; fontSize: number };
 }) => {
   const sizeConfig = {
     sm: { className: "text-xs", pixels: 32 },
@@ -66,8 +68,19 @@ const UserAvatar = ({
 
   return (
     <div
-      className={`${className} rounded-full bg-cyan-100 text-cyan-700 font-semibold flex items-center justify-center`}
-      style={{ width: pixels, height: pixels }}
+      {...(customSize
+        ? {
+            className: `rounded-full bg-cyan-100 text-cyan-700 font-semibold flex items-center justify-center`,
+            style: {
+              width: customSize.pixels,
+              height: customSize.pixels,
+              fontSize: customSize.fontSize,
+            },
+          }
+        : {
+            className: `${className} rounded-full bg-cyan-100 text-cyan-700 font-semibold flex items-center justify-center`,
+            style: { width: pixels, height: pixels },
+          })}
     >
       {getInitials(
         company ? company.name : employee?.firstName + " " + employee?.lastName,

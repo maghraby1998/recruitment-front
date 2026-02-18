@@ -218,3 +218,12 @@ export const GET_ALL_SKILLS = gql`
     }
   }
 `;
+
+export const GET_POSITIONS = gql`
+  query GetPositions($name: String) {
+    positions(name: $name) {
+      id
+      title
+    }
+  }
+`;

@@ -8,14 +8,18 @@ import { useRouter } from "next/navigation";
 import { Camera, CircleArrowLeft, X } from "lucide-react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { REGISTER_EMPLOYEE } from "@/app/_graphql/mutations";
+import { useState } from "react";
+import { GET_POSITIONS } from "@/app/_graphql/queries";
 
 const schema = yup
   .object({
     firstName: yup.string().required(),
     lastName: yup.string().required(),
     email: yup.string().email().required(),
+    positionId: yup.string().optional(),
+    positionName: yup.string().optional(),
     password: yup.string().min(6).required(),
     confirmPassword: yup
       .string()
@@ -30,12 +34,11 @@ type Inputs = yup.InferType<typeof schema>;
 export default function EmployeeForm() {
   const router = useRouter();
 
+  const [isPositionFocused, setIsPositionFocused] = useState(false);
+
   const [registerEmployee, { loading }] = useMutation(REGISTER_EMPLOYEE, {
     onCompleted: (data: any) => {
       router.replace("/");
-    },
-    onError: (error) => {
-      console.error("Mutation error:", error);
     },
   });
 
@@ -45,9 +48,24 @@ export default function EmployeeForm() {
     watch,
     resetField,
     formState: { errors },
+    setValue,
   } = useForm<Inputs>({
     resolver: yupResolver(schema) as Resolver<Inputs>,
+    defaultValues: {
+      positionName: "",
+    },
   });
+
+  const { data } = useQuery<{ positions: { id: string; title: string }[] }>(
+    GET_POSITIONS,
+    {
+      fetchPolicy: "network-only",
+      skip: !watch("positionName"),
+      variables: {
+        name: watch("positionName"),
+      },
+    },
+  );
 
   const selectedImage = watch("image");
   const imagePreview =
@@ -62,6 +80,8 @@ export default function EmployeeForm() {
           email: data.email,
           password: data.password,
           confirmPassword: data.confirmPassword,
+          positionId: data.positionId ? data.positionId : null,
+          positionName: data.positionId ? null : data.positionName,
         },
         image: data.image?.[0],
       },
@@ -150,6 +170,43 @@ export default function EmployeeForm() {
               {errors.email?.message ? (
                 <p className="text-red-500">{errors.email?.message}</p>
               ) : null}
+            </div>
+            <div className="relative">
+              <label htmlFor="email" className="block mb-1">
+                Position
+              </label>
+              <Input
+                id="position"
+                placeholder="Position"
+                value={watch("positionName")}
+                onChange={(e) => {
+                  setValue("positionName", e.target.value ?? "");
+                  setValue("positionId", null);
+                }}
+                onFocus={() => setIsPositionFocused(true)}
+                onBlur={() =>
+                  setTimeout(() => setIsPositionFocused(false), 150)
+                }
+              />
+
+              {data?.positions &&
+                data.positions.length > 0 &&
+                isPositionFocused && (
+                  <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                    {data.positions.map((position) => (
+                      <li
+                        key={position.id}
+                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        onClick={() => {
+                          setValue("positionId", position.id);
+                          setValue("positionName", position.title);
+                        }}
+                      >
+                        {position.title}
+                      </li>
+                    ))}
+                  </ul>
+                )}
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="password">Password</label>

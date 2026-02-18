@@ -16,6 +16,10 @@ export type User = {
     firstName: string;
     lastName: string;
     imgPath: string;
+    position: {
+      id: number;
+      title: string;
+    };
   };
   company: {
     id: number;

@@ -227,3 +227,9 @@ export const GET_POSITIONS = gql`
     }
   }
 `;
+
+export const GET_SKILLS_BASED_ON_POSITIONS = gql`
+  query GenerateSkills($position: String) {
+    generateSkills(position: $position)
+  }
+`;

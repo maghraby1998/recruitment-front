@@ -52,7 +52,7 @@ export const EmployeeAccountPage = () => {
         </div>
       </Card>
 
-      <EmployeeSkillsSection id={employee?.id} />
+      <EmployeeSkillsSection id={employee?.id} position={employee.position.title} />
     </div>
   ) : null;
 };

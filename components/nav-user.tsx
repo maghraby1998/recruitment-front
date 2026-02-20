@@ -29,6 +29,7 @@ import { LOGOUT } from "@/app/_graphql/mutations";
 import { useRouter } from "next/navigation";
 import { User, UserType } from "./context-provider";
 import Link from "next/link";
+import { BACKEND_URL } from "@/app/_config";
 
 export function NavUser({ user }: { user: User }) {
   const router = useRouter();
@@ -62,7 +63,7 @@ export function NavUser({ user }: { user: User }) {
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage
-                  src={`http://localhost:5000${user?.user_type == "EMPLOYEE" ? user?.employee.imgPath : user?.company.imgPath}`}
+                  src={`${BACKEND_URL}${user?.user_type == "EMPLOYEE" ? user?.employee.imgPath : user?.company.imgPath}`}
                   alt={name}
                 />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
@@ -86,7 +87,7 @@ export function NavUser({ user }: { user: User }) {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage
-                    src={`http://localhost:5000${user?.user_type == "EMPLOYEE" ? user?.employee.imgPath : user?.company.imgPath}`}
+                    src={`${BACKEND_URL}${user?.user_type == "EMPLOYEE" ? user?.employee.imgPath : user?.company.imgPath}`}
                     alt={name}
                   />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>

@@ -9,6 +9,7 @@ import Image from "next/image";
 import UserAvatar from "@/components/ui/company-avatar";
 import Link from "next/link";
 import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
+import { BACKEND_URL } from "@/app/_config";
 
 enum ApplicationStatus {
   PENDING = "PENDING",
@@ -89,7 +90,7 @@ function EmployeeAvatar({
   if (employee.imgPath) {
     return (
       <Image
-        src={`http://localhost:5000${employee.imgPath}`}
+        src={`${BACKEND_URL}${employee.imgPath}`}
         alt={employee.firstName}
         width={pixels}
         height={pixels}

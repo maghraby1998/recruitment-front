@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { BACKEND_URL } from "@/app/_config";
 
 enum JobPostStatus {
   OPEN = "OPEN",
@@ -55,7 +56,7 @@ const UserAvatar = ({
   if ((company && company.imgPath) || (employee && employee.imgPath)) {
     return (
       <Image
-        src={`http://localhost:5000${company ? company.imgPath : employee?.imgPath}`}
+        src={`${BACKEND_URL}${company ? company.imgPath : employee?.imgPath}`}
         alt={company ? company.name : (employee?.firstName ?? "user image")}
         width={pixels}
         height={pixels}

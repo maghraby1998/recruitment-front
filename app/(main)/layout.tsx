@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ApolloProviderComponent } from "@/components/apollo-provider";
 import { AuthContextProvider, User } from "@/components/context-provider";
 import { cookies } from "next/headers";
+import { GRAPHQL_URL } from "@/app/_config";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +17,7 @@ const fetchAuth = async () => {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const response = await fetch("http://localhost:5000/graphql", {
+  const response = await fetch(GRAPHQL_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

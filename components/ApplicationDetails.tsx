@@ -18,6 +18,7 @@ import {
 import { Applicaion } from "@/app/(main)/job-posts/[jobPostId]/applications/page";
 import { Button } from "./ui/button";
 import { UPDATE_APPLICATION_STATUS } from "@/app/_graphql/mutations";
+import { BACKEND_URL } from "@/app/_config";
 
 interface Props {
   applicationId: string;
@@ -86,7 +87,7 @@ const ApplicationDetailsComp: React.FC<Props> = ({
           {data?.application?.CVFilePath && (
             <a
               target="_blank"
-              href={`http://localhost:5000${data?.application?.CVFilePath}`}
+              href={`${BACKEND_URL}${data?.application?.CVFilePath}`}
               className="flex items-center gap-3 rounded-lg border p-3 mb-3 hover:bg-muted transition-colors"
             >
               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />

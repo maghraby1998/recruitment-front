@@ -7,6 +7,7 @@ import Image from "next/image";
 import { EmployeeSkillsSection } from "./employee-skills-section";
 import { Card } from "./ui/card";
 import UserAvatar from "./ui/company-avatar";
+import { BACKEND_URL } from "@/app/_config";
 
 const pixels = 150;
 
@@ -32,7 +33,7 @@ export const EmployeeAccountPage = () => {
               marginBottom: 15,
             }}
             unoptimized
-            src={`http://localhost:5000${employee?.imgPath}`}
+            src={`${BACKEND_URL}${employee?.imgPath}`}
           />
         ) : (
           <UserAvatar

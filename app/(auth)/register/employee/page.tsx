@@ -181,7 +181,7 @@ export default function EmployeeForm() {
                 value={watch("positionName")}
                 onChange={(e) => {
                   setValue("positionName", e.target.value ?? "");
-                  setValue("positionId", null);
+                  setValue("positionId", undefined);
                 }}
                 onFocus={() => setIsPositionFocused(true)}
                 onBlur={() =>

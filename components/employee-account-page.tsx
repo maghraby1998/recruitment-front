@@ -46,14 +46,17 @@ export const EmployeeAccountPage = () => {
           />
         )}
         <div>
-          <h3 className="capitalize font-bold text-2xl">{`${employee?.firstName} ${employee?.lastName}`}</h3>
+          <h3 className="capitalize font-bold text-2xl mb-2">{`${employee?.firstName} ${employee?.lastName}`}</h3>
           <h4 className="capitalize font-semibold text-gray-500">
             {employee.position.title}
           </h4>
         </div>
       </Card>
 
-      <EmployeeSkillsSection id={employee?.id} position={employee.position.title} />
+      <EmployeeSkillsSection
+        id={employee?.id}
+        position={employee.position.title}
+      />
     </div>
   ) : null;
 };

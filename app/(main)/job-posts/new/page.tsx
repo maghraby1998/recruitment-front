@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useMutation } from "@apollo/client/react";
 import { CREATE_JOB_POST } from "@/app/_graphql/mutations";
 import { useState } from "react";
 import { Skill } from "@/components/employee-skills-section";
 import { GET_ALL_SKILLS } from "@/app/_graphql/queries";
+import AsyncSelect from "react-select/async";
+import { useLazyQuery } from "@apollo/client/react";
+import type { MultiValue } from "react-select";
 
 type QuestionType = "TEXT" | "TEXTAREA" | "RADIO";
 
@@ -198,15 +201,28 @@ function QuestionItem({
 export default function CreateJobPost() {
   const router = useRouter();
 
-  const [skillName, setSkillName] = useState("");
-
-  const { data } = useQuery<{ skills: Skill[] }>(GET_ALL_SKILLS, {
+  const [fetchSkills] = useLazyQuery<{ skills: Skill[] }>(GET_ALL_SKILLS, {
     fetchPolicy: "network-only",
-    skip: !skillName,
-    variables: {
-      search: skillName,
-    },
   });
+
+  const loadSkillOptions = (inputValue: string) =>
+    fetchSkills({ variables: { search: inputValue } }).then((res) => {
+      const existing = res.data?.skills ?? [];
+      const options = existing.map((s) => ({
+        value: s.id,
+        label: s.name,
+        isNew: false,
+      }));
+      if (
+        inputValue &&
+        !existing.some(
+          (s) => s.name.toLowerCase() === inputValue.toLowerCase(),
+        )
+      ) {
+        options.unshift({ value: null as any, label: inputValue, isNew: true });
+      }
+      return options;
+    });
 
   const [createJobPost, { loading }] = useMutation(CREATE_JOB_POST, {
     onCompleted: () => {
@@ -228,8 +244,6 @@ export default function CreateJobPost() {
     resolver: yupResolver(schema) as any,
   });
 
-  console.log("data", watch("skills"), watch("skillNames"));
-
   const { fields, append, remove } = useFieldArray({
     control,
     name: "form.questions",
@@ -249,10 +263,31 @@ export default function CreateJobPost() {
     });
   };
 
-  const allSkillsOptions = [
-    { id: null, name: skillName },
-    ...(data?.skills ?? []),
+  const selectedSkillsValue = [
+    ...(watch("skills") ?? []).map((s) => ({
+      value: s.id,
+      label: s.name,
+      isNew: false,
+    })),
+    ...(watch("skillNames") ?? []).map((name) => ({
+      value: null as any,
+      label: name,
+      isNew: true,
+    })),
   ];
+
+  const handleSkillsChange = (
+    newValue: MultiValue<{ value: any; label: string; isNew: boolean }>,
+  ) => {
+    const existingSkills = newValue
+      .filter((o) => !o.isNew)
+      .map((o) => ({ id: o.value, name: o.label }));
+    const newSkillNames = newValue
+      .filter((o) => o.isNew)
+      .map((o) => o.label);
+    setValue("skills", existingSkills);
+    setValue("skillNames", newSkillNames);
+  };
 
   return (
     <div>
@@ -278,63 +313,19 @@ export default function CreateJobPost() {
           ) : null}
         </div>
 
-        <div className="relative">
-          <label className="mb-1 block" htmlFor="title">
-            Skills
-          </label>
-          <Input
-            id="skill"
-            value={skillName}
-            onChange={(e) => setSkillName(e.target.value ?? "")}
-            placeholder="Title"
+        <div>
+          <label className="mb-1 block">Skills</label>
+          <AsyncSelect
+            isMulti
+            cacheOptions
+            defaultOptions
+            loadOptions={loadSkillOptions}
+            value={selectedSkillsValue}
+            onChange={handleSkillsChange}
+            placeholder="Search for skills..."
+            noOptionsMessage={() => "Type to search skills"}
+            getOptionValue={(o) => `${o.isNew ? "new" : "existing"}-${o.label}`}
           />
-
-          {allSkillsOptions && allSkillsOptions.length > 0 && skillName && (
-            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-              {allSkillsOptions.map((skill) => (
-                <li
-                  key={skill.id}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                  onClick={() => {
-                    if (skill.id) {
-                      setValue("skills", [
-                        ...(watch("skills") ?? []),
-                        { id: skill.id, name: skill.name },
-                      ]);
-                    } else {
-                      setValue("skillNames", [
-                        ...(watch("skillNames") ?? []),
-                        skill.name.toString(),
-                      ]);
-                    }
-                    setSkillName("");
-                  }}
-                >
-                  {skill?.name}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="flex flex-wrap gap-3 mt-3">
-            {[...(watch("skillNames") ?? [])]?.map((skillName) => (
-              <p
-                className="bg-slate-500 text-white w-fit p-2 rounded-full px-5"
-                key={skillName}
-              >
-                {skillName}
-              </p>
-            ))}
-
-            {[...(watch("skills") ?? [])]?.map((skill) => (
-              <p
-                className="bg-slate-500 text-white w-fit p-2 rounded-full px-5"
-                key={skill?.id}
-              >
-                {skill?.name}
-              </p>
-            ))}
-          </div>
         </div>
 
         <div className="mb-4">

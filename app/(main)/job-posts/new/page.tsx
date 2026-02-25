@@ -10,10 +10,10 @@ import { useMutation } from "@apollo/client/react";
 import { CREATE_JOB_POST } from "@/app/_graphql/mutations";
 import { useState } from "react";
 import { Skill } from "@/components/employee-skills-section";
-import { GET_ALL_SKILLS } from "@/app/_graphql/queries";
+import { GET_ALL_SKILLS, GET_POSITIONS } from "@/app/_graphql/queries";
 import AsyncSelect from "react-select/async";
 import { useLazyQuery } from "@apollo/client/react";
-import type { MultiValue } from "react-select";
+import type { MultiValue, SingleValue } from "react-select";
 
 type QuestionType = "TEXT" | "TEXTAREA" | "RADIO";
 
@@ -22,6 +22,8 @@ type Inputs = {
   description: string;
   skills: { id: number; name: string }[];
   skillNames: string[];
+  positionId: number | null;
+  positionName: string | null;
   form?: {
     requireCV?: boolean;
     questions?: {
@@ -49,6 +51,8 @@ const schema = yup
       )
       .optional(),
     skillNames: yup.array().of(yup.string()).optional(),
+    positionId: yup.number().nullable().optional(),
+    positionName: yup.string().nullable().optional(),
     form: yup
       .object({
         requireCV: yup.boolean().optional(),
@@ -205,6 +209,31 @@ export default function CreateJobPost() {
     fetchPolicy: "network-only",
   });
 
+  const [fetchPositions, { data }] = useLazyQuery<{
+    positions: { id: number; title: string }[];
+  }>(GET_POSITIONS, {
+    fetchPolicy: "network-only",
+  });
+
+  const loadPositionOptions = (inputValue: string) =>
+    fetchPositions({ variables: { search: inputValue } }).then((res) => {
+      const existing = res.data?.positions ?? [];
+      const options = existing.map((s) => ({
+        value: s.id,
+        label: s.title,
+        isNew: false,
+      }));
+      if (
+        inputValue &&
+        !existing.some(
+          (s) => s.title.toLowerCase() === inputValue.toLowerCase(),
+        )
+      ) {
+        options.unshift({ value: null as any, label: inputValue, isNew: true });
+      }
+      return options;
+    });
+
   const loadSkillOptions = (inputValue: string) =>
     fetchSkills({ variables: { search: inputValue } }).then((res) => {
       const existing = res.data?.skills ?? [];
@@ -215,9 +244,7 @@ export default function CreateJobPost() {
       }));
       if (
         inputValue &&
-        !existing.some(
-          (s) => s.name.toLowerCase() === inputValue.toLowerCase(),
-        )
+        !existing.some((s) => s.name.toLowerCase() === inputValue.toLowerCase())
       ) {
         options.unshift({ value: null as any, label: inputValue, isNew: true });
       }
@@ -249,7 +276,11 @@ export default function CreateJobPost() {
     name: "form.questions",
   });
 
+  console.log("errors", errors);
+
   const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log("submit");
+
     createJobPost({
       variables: {
         input: {
@@ -258,6 +289,8 @@ export default function CreateJobPost() {
           skillsIds: data.skills.map((skill) => skill.id),
           skillsNames: data.skillNames,
           form: data.form,
+          positionId: data.positionId,
+          positionName: data.positionName,
         },
       },
     });
@@ -276,15 +309,29 @@ export default function CreateJobPost() {
     })),
   ];
 
+  const handlePositionChange = (
+    newValue: SingleValue<{
+      value: any;
+      label: string;
+      isNew: boolean;
+    }>,
+  ) => {
+    if (newValue && newValue.isNew) {
+      setValue("positionId", null);
+      setValue("positionName", newValue.label);
+    } else if (newValue) {
+      setValue("positionId", newValue.value);
+      setValue("positionName", null);
+    }
+  };
+
   const handleSkillsChange = (
     newValue: MultiValue<{ value: any; label: string; isNew: boolean }>,
   ) => {
     const existingSkills = newValue
       .filter((o) => !o.isNew)
       .map((o) => ({ id: o.value, name: o.label }));
-    const newSkillNames = newValue
-      .filter((o) => o.isNew)
-      .map((o) => o.label);
+    const newSkillNames = newValue.filter((o) => o.isNew).map((o) => o.label);
     setValue("skills", existingSkills);
     setValue("skillNames", newSkillNames);
   };
@@ -314,8 +361,37 @@ export default function CreateJobPost() {
         </div>
 
         <div>
+          <label className="mb-1 block">Position</label>
+          <AsyncSelect<{ value: number | null; label: string; isNew: boolean }>
+            cacheOptions
+            defaultOptions
+            loadOptions={loadPositionOptions}
+            value={
+              !!watch("positionId")
+                ? ({
+                    label: data?.positions.find(
+                      (pos) => pos.id == watch("positionId"),
+                    )?.title,
+                    value: watch("positionId"),
+                    isNew: false,
+                  } as any)
+                : !!watch("positionName")
+                  ? { label: watch("positionName"), value: null, isNew: true }
+                  : null
+            }
+            onChange={handlePositionChange}
+            placeholder="Search for positions..."
+            noOptionsMessage={() => "Type to search positions"}
+            getOptionValue={(o) => `${o.isNew ? "new" : "existing"}-${o.label}`}
+          />
+        </div>
+
+        <div>
           <label className="mb-1 block">Skills</label>
-          <AsyncSelect
+          <AsyncSelect<
+            { value: number | null; label: string; isNew: boolean },
+            true
+          >
             isMulti
             cacheOptions
             defaultOptions

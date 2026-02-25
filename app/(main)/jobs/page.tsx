@@ -32,6 +32,10 @@ type JobPost = {
   created_at: Date;
   canApply: boolean;
   skills: Skill[];
+  position: {
+    id: number;
+    title: string;
+  };
 };
 
 function JobDetails({ job }: { job: JobPost }) {
@@ -77,6 +81,14 @@ function JobDetails({ job }: { job: JobPost }) {
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="text-gray-700">{job.description}</p>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-2">Position</h2>
+        <div className="flex flex-wrap gap-2">
+          <p className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm capitalize">
+            {job.position.title}
+          </p>
+        </div>
       </div>
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Skills</h2>

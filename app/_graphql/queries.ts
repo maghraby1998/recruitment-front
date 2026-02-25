@@ -63,6 +63,9 @@ export const GET_JOB_POSTS = gql`
           id
           name
         }
+        position {
+          title
+        }
       }
       meta {
         totalItems

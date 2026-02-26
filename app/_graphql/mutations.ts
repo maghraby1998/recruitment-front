@@ -83,3 +83,11 @@ export const CREATE_EMPLOYEE_SKILL = gql`
     }
   }
 `;
+
+export const CHANGE_PROFILE_IMAGE = gql`
+  mutation ChangeProfileImage($image: Upload!) {
+    changeImage(image: $image) {
+      id
+    }
+  }
+`;

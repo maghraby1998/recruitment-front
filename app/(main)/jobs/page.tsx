@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@apollo/client/react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,6 +13,14 @@ import UserAvatar from "@/components/ui/company-avatar";
 import { useAuth } from "@/components/context-provider";
 import moment from "moment";
 import { Pagination, type PaginationMeta } from "@/components/ui/pagination";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skill } from "@/components/employee-skills-section";
 
 enum JobPostStatus {
@@ -82,14 +91,16 @@ function JobDetails({ job }: { job: JobPost }) {
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="text-gray-700">{job.description}</p>
       </div>
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-2">Position</h2>
-        <div className="flex flex-wrap gap-2">
-          <p className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm capitalize">
-            {job.position.title}
-          </p>
+      {job?.position?.title ? (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-2">Position</h2>
+          <div className="flex flex-wrap gap-2">
+            <p className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm capitalize">
+              {job?.position?.title}
+            </p>
+          </div>
         </div>
-      </div>
+      ) : null}
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">Skills</h2>
         <div className="flex flex-wrap gap-2">
@@ -111,6 +122,32 @@ export default function Jobs() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
+  const search = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "all";
+
+  const [searchInput, setSearchInput] = useState(search);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const updateFilter = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value && value !== "all") {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.delete("page");
+    router.push(`/jobs?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateFilter("search", searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const setPage = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
@@ -118,11 +155,16 @@ export default function Jobs() {
     router.push(`/jobs?${params.toString()}`);
   };
 
+  const filter: Record<string, unknown> = {};
+  if (search) filter.search = search;
+  if (status && status !== "all") filter.status = status;
+
   const { data } = useQuery(GET_JOB_POSTS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
     variables: {
       pagination: { page, limit: 10 },
+      filter: Object.keys(filter).length > 0 ? filter : undefined,
     },
   }) as {
     data: {
@@ -147,59 +189,82 @@ export default function Jobs() {
   };
 
   return (
-    <div className="flex items-start gap-6 h-[85vh]">
-      <div className="flex flex-col gap-3 flex-1 max-w-md h-full overflow-y-auto pr-2">
-        {jobPosts?.map((jobPost) => (
-          <Card
-            key={jobPost.id}
-            className={`p-5 cursor-pointer transition-all hover:shadow-md ${
-              selectedJob?.id === jobPost.id
-                ? "border-cyan-500 border-2"
-                : "border"
-            }`}
-            onClick={() => handleJobSelect(jobPost.id)}
-          >
-            <div className="flex items-center gap-3">
-              <UserAvatar
-                company={jobPost.company}
-                userType="COMPANY"
-                size="lg"
-              />
-              <div className="flex-1">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-cyan-600 capitalize">
-                      {jobPost.title}
-                    </h2>
-                    <Badge
-                      style={{
-                        backgroundColor:
-                          jobPost.status == JobPostStatus.OPEN
-                            ? "green"
-                            : "red",
-                      }}
-                    >
-                      {jobPost.status}
-                    </Badge>
-                  </div>
-                </CardTitle>
-                <CardContent className="p-0">
-                  {jobPost.company.name}
-                  <p className="text-gray-500">
-                    {moment(jobPost?.created_at).fromNow()}
-                  </p>
-                </CardContent>
-              </div>
-            </div>
-          </Card>
-        ))}
-        {paginationMeta && (
-          <>
-            <Pagination meta={paginationMeta} onPageChange={setPage} />
-          </>
-        )}
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-2">
+        <Input
+          placeholder="Search jobs..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="flex-1"
+        />
+        <Select
+          value={status}
+          onValueChange={(value) => updateFilter("status", value)}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="OPEN">Open</SelectItem>
+            <SelectItem value="CLOSED">Closed</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      {selectedJob ? <JobDetails job={selectedJob} /> : null}
+      <div className="flex items-start gap-6 h-[85vh]">
+        <div className="flex flex-col gap-3 flex-1 max-w-md h-full overflow-y-auto pr-2">
+          {jobPosts?.map((jobPost) => (
+            <Card
+              key={jobPost.id}
+              className={`p-5 cursor-pointer transition-all hover:shadow-md ${
+                selectedJob?.id === jobPost.id
+                  ? "border-cyan-500 border-2"
+                  : "border"
+              }`}
+              onClick={() => handleJobSelect(jobPost.id)}
+            >
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  company={jobPost.company}
+                  userType="COMPANY"
+                  size="lg"
+                />
+                <div className="flex-1">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-cyan-600 capitalize">
+                        {jobPost.title}
+                      </h2>
+                      <Badge
+                        style={{
+                          backgroundColor:
+                            jobPost.status == JobPostStatus.OPEN
+                              ? "green"
+                              : "red",
+                        }}
+                      >
+                        {jobPost.status}
+                      </Badge>
+                    </div>
+                  </CardTitle>
+                  <CardContent className="p-0">
+                    {jobPost.company.name}
+                    <p className="text-gray-500">
+                      {moment(jobPost?.created_at).fromNow()}
+                    </p>
+                  </CardContent>
+                </div>
+              </div>
+            </Card>
+          ))}
+          {paginationMeta && (
+            <>
+              <Pagination meta={paginationMeta} onPageChange={setPage} />
+            </>
+          )}
+        </div>
+        {selectedJob ? <JobDetails job={selectedJob} /> : null}
+      </div>
     </div>
   );
 }

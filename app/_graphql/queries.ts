@@ -45,8 +45,11 @@ export const GET_MY_JOB_POSTS = gql`
 `;
 
 export const GET_JOB_POSTS = gql`
-  query GetJobPosts($pagination: PaginationInput) {
-    jobPosts(pagination: $pagination) {
+  query GetJobPosts(
+    $filter: JobPostsFilterInput
+    $pagination: PaginationInput
+  ) {
+    jobPosts(filter: $filter, pagination: $pagination) {
       data {
         id
         title

@@ -174,9 +174,9 @@ function PostCard({
               {moment(post.created_at).fromNow()}
             </p>
           </div>
-          {/* <span className="ml-auto bg-cyan-100 text-cyan-700 text-xs px-2 py-1 rounded">
+          <span className="ml-auto bg-cyan-100 text-cyan-700 text-xs px-2 py-1 rounded">
             {post.type}
-          </span> */}
+          </span>
         </div>
       </CardHeader>
       <CardContent>
@@ -238,10 +238,11 @@ function PostCard({
                 <div className="space-y-2">
                   {post.comments.map((comment) => {
                     const commentUser = comment.user;
-                    const isCommentEmployee = commentUser.user_type === UserType.EMPLOYEE;
+                    const isCommentEmployee =
+                      commentUser.user_type === UserType.EMPLOYEE;
                     const commentUserName = isCommentEmployee
                       ? `${commentUser.employee?.firstName} ${commentUser.employee?.lastName}`
-                      : commentUser.company?.name ?? "Unknown";
+                      : (commentUser.company?.name ?? "Unknown");
                     const commentUserImage = isCommentEmployee
                       ? commentUser.employee?.imgPath
                       : commentUser.company?.imgPath;
@@ -264,13 +265,34 @@ function PostCard({
                             />
                           ) : (
                             <UserAvatar
-                              employee={isCommentEmployee ? { firstName: commentUser.employee?.firstName ?? "", lastName: commentUser.employee?.lastName ?? "", imgPath: "" } : undefined}
-                              company={!isCommentEmployee ? { name: commentUser.company?.name ?? "", imgPath: "" } : undefined}
-                              userType={isCommentEmployee ? "EMPLOYEE" : "COMPANY"}
+                              employee={
+                                isCommentEmployee
+                                  ? {
+                                      firstName:
+                                        commentUser.employee?.firstName ?? "",
+                                      lastName:
+                                        commentUser.employee?.lastName ?? "",
+                                      imgPath: "",
+                                    }
+                                  : undefined
+                              }
+                              company={
+                                !isCommentEmployee
+                                  ? {
+                                      name: commentUser.company?.name ?? "",
+                                      imgPath: "",
+                                    }
+                                  : undefined
+                              }
+                              userType={
+                                isCommentEmployee ? "EMPLOYEE" : "COMPANY"
+                              }
                               size="sm"
                             />
                           )}
-                          <span className="font-semibold text-xs">{commentUserName}</span>
+                          <span className="font-semibold text-xs">
+                            {commentUserName}
+                          </span>
                         </div>
                         <p className="text-gray-700">{comment.content}</p>
                       </div>

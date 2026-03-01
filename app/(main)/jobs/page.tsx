@@ -51,68 +51,73 @@ function JobDetails({ job }: { job: JobPost }) {
   const authUser = useAuth();
 
   return (
-    <div className="p-6 border-l w-100 flex-1">
-      <div className="flex items-center gap-3 mb-3">
-        <UserAvatar company={job.company} userType="COMPANY" />
-        <h1 className="font-bold text-xl capitalize">{job.company.name}</h1>
+    <div className="p-6 border-l w-100 flex-1 bg-white rounded-lg shadow-sm">
+      <div className="flex items-center gap-3 mb-4">
+        <UserAvatar company={job.company} userType="COMPANY" size="lg" />
+        <div>
+          <h1 className="font-bold text-xl capitalize text-gray-900">{job.company.name}</h1>
+          <p className="text-sm text-gray-500">Posted {moment(job?.created_at).fromNow()}</p>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
+      
+      <div className="flex items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold text-cyan-600 capitalize">
           {job.title}
         </h1>
         <Badge
-          style={{
-            backgroundColor:
-              job.status === JobPostStatus.OPEN ? "green" : "red",
-          }}
+          className={job.status === JobPostStatus.OPEN ? "bg-green-500" : "bg-red-500"}
         >
           {job.status}
         </Badge>
       </div>
-      <p className="text-gray-600 mb-2">{moment(job?.created_at).fromNow()}</p>{" "}
-      <p className="font-semibold text-lg">
-        <b>{job.applicationsNumber ?? 0}</b> Applicants
-      </p>
+
+      <div className="flex items-center gap-4 mb-6 text-sm text-gray-600">
+        <span className="flex items-center gap-1">
+          <span className="font-semibold text-gray-900">{job.applicationsNumber ?? 0}</span> Applicants
+        </span>
+        {job?.position?.title && (
+          <span className="flex items-center gap-1">
+            <span className="font-semibold text-gray-900">{job.position.title}</span>
+          </span>
+        )}
+      </div>
+      
       {authUser?.user?.user_type == "EMPLOYEE" ? (
         job?.canApply ? (
           <Link
-            className="my-3 bg-slate-500 text-white px-2 py-1 rounded block w-[80px] text-center"
+            className="inline-flex items-center justify-center bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-md font-medium transition-colors mb-6"
             href={`/jobs/${job.id}/apply?jobId=${job.id}`}
           >
-            Apply
+            Apply Now
           </Link>
         ) : (
-          <p className="my-3 bg-slate-500/50 text-white px-2 py-1 rounded block w-[80px] text-center">
+          <p className="inline-flex items-center justify-center bg-gray-200 text-gray-600 px-4 py-2 rounded-md font-medium mb-6">
             Applied
           </p>
         )
       ) : null}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-2">Description</h2>
-        <p className="text-gray-700">{job.description}</p>
-      </div>
-      {job?.position?.title ? (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">Position</h2>
-          <div className="flex flex-wrap gap-2">
-            <p className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm capitalize">
-              {job?.position?.title}
-            </p>
+      
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold mb-2 text-gray-900">Description</h2>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>
+        </div>
+        
+        {job.skills && job.skills.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-3 text-gray-900">Required Skills</h2>
+            <div className="flex flex-wrap gap-2">
+              {job.skills.map((skill) => (
+                <span
+                  className="bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full px-3 py-1 text-sm font-medium"
+                  key={skill.id}
+                >
+                  {skill.name}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      ) : null}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-2">Skills</h2>
-        <div className="flex flex-wrap gap-2">
-          {job.skills.map((skill) => (
-            <p
-              className="bg-slate-400 w-fit rounded text-white font-semibold py-2 px-3 text-sm"
-              key={skill.id}
-            >
-              {skill.name}
-            </p>
-          ))}
-        </div>
+        )}
       </div>
     </div>
   );

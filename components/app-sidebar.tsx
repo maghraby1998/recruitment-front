@@ -163,6 +163,11 @@ const employeeLinks = [
     url: "/my-applications",
     icon: IconDashboard,
   },
+  {
+    title: "Feeds",
+    url: "/feeds",
+    icon: IconDashboard,
+  },
 ];
 
 const companyLinks = [
@@ -177,6 +182,11 @@ const companyLinks = [
     icon: IconDashboard,
     actionIcon: IconPlus,
     actionUrl: "/job-posts/new",
+  },
+  {
+    title: "Feeds",
+    url: "/feeds",
+    icon: IconDashboard,
   },
 ];
 

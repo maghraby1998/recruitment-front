@@ -1,0 +1,324 @@
+enum ApplicationStatus {
+  PENDING
+  REJECTED
+  CANCELLED
+  IN_CONSIDERATION
+}
+
+type Application {
+  id: ID
+  jobPost: JobPost
+  employee: Employee
+  status: ApplicationStatus
+  CVFilePath: String
+  answers: [Answer]
+}
+
+type Mutation {
+  applyForJob(input: ApplyForJobInput, CVFilePdf: Upload): Application
+  updateApplicationStatus(input: UpdateApplicationStatusInput): Application
+  createCompany(input: CreateCompanyInput!, image: Upload): Company!
+  createEmployee(input: CreateEmployeeInput!, image: Upload): Employee!
+  createJobPost(input: CreateJobPostInput): JobPost
+  deleteJobPost(id: ID!): JobPost
+  toggleJobPostStatus(id: ID!): JobPost
+  createPost(input: CreatePostInput): Post
+  createReact(input: CreateReactionInput): React
+  createComment(input: CreateCommentInput): Comment
+  createSkill(input: CreateSkillInput): Skill
+  deleteSkill(id: ID!): Skill
+  signIn(input: SignInInput!): User!
+  logOut: Boolean!
+  changeImage(image: Upload!): User!
+}
+
+type PaginatedApplications {
+  data: [Application!]!
+  meta: PaginationMeta!
+}
+
+type Query {
+  application(id: ID!): Application
+  getJobPostApplications(jobPostId: ID!, pagination: PaginationInput): PaginatedApplications
+  getMyApplications(pagination: PaginationInput): PaginatedApplications
+  company(id: ID!): Company!
+  employee(id: ID!): Employee!
+  jobPosts(filter: JobPostsFilterInput, pagination: PaginationInput): PaginatedJobPosts
+  myJobPosts(pagination: PaginationInput): PaginatedJobPosts
+  jobPost(id: ID!): JobPost
+  positions(name: String): [Position]
+  posts(pagination: PaginationInput): PaginatedPosts
+  skills(search: String): [Skill]
+  getMySkills: [Skill]
+  generateSkills(position: String): [String]
+  users: [User!]!
+  getAuthUser: User!
+}
+
+input AnswerInput {
+  questionId: ID!
+  value: String!
+}
+
+input ApplyForJobInput {
+  jobPostId: ID!
+  answers: [AnswerInput]
+}
+
+input UpdateApplicationStatusInput {
+  id: ID!
+  status: ApplicationStatus
+}
+
+type Company {
+  id: ID!
+  name: String!
+  user: User!
+  imgPath: String
+  country: Country
+  city: City
+}
+
+input CreateCompanyInput {
+  name: String!
+  email: String!
+  password: String!
+  confirmPassword: String!
+  description: String
+}
+
+type Employee {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  user: User!
+  imgPath: String
+  country: Country
+  city: City
+  position: Position
+}
+
+input CreateEmployeeInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  confirmPassword: String!
+  positionId: ID
+  positionName: String
+}
+
+enum JobPostStatus {
+  OPEN
+  CLOSED
+}
+
+enum QuestionType {
+  TEXT
+  TEXTAREA
+  RADIO
+}
+
+scalar DateTime
+
+type JobPost {
+  id: ID!
+  title: String!
+  description: String!
+  company: Company!
+  status: JobPostStatus
+  form: JobPostForm
+  applications: [Application]
+  applicationsNumber: Int
+  created_at: DateTime
+  canApply: Boolean
+  skills: [Skill]
+  position: Position
+}
+
+type JobPostForm {
+  id: ID
+  requireCV: Boolean
+  questions: [Question]
+}
+
+type Question {
+  id: ID
+  label: String
+  isRequired: Boolean
+  type: QuestionType
+  options: [QuestionOption]
+}
+
+type QuestionOption {
+  id: ID
+  value: String
+}
+
+input CreateJobPostInput {
+  title: String
+  description: String
+  skillsIds: [ID]
+  skillsNames: [String]
+  form: JobPostFormInput
+  positionId: ID
+  positionName: String
+}
+
+input JobPostFormInput {
+  id: ID
+  questions: [QuestionInput]
+  requireCV: Boolean
+}
+
+input QuestionOptionInput {
+  id: ID
+  value: String
+}
+
+input QuestionInput {
+  id: ID
+  label: String
+  isRequired: Boolean
+  type: QuestionType
+  options: [QuestionOptionInput]
+}
+
+type Answer {
+  id: ID
+  value: String
+  questionId: ID
+}
+
+type PaginatedJobPosts {
+  data: [JobPost!]!
+  meta: PaginationMeta!
+}
+
+input JobPostsFilterInput {
+  search: String
+  status: JobPostStatus
+}
+
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
+}
+
+type PaginationMeta {
+  totalItems: Int!
+  totalPages: Int!
+  currentPage: Int!
+  limit: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+type Position {
+  id: ID
+  title: String
+}
+
+enum PostType {
+  CELEBRATION
+  ANNOUNCEMENT
+  OPINION
+  QUESTION
+  OTHER
+}
+
+enum ReactType {
+  LIKE
+  DISLIKE
+  LOVE
+  HAHA
+  WOW
+  CELEBRATE
+}
+
+type Post {
+  id: ID
+  content: String
+  comments: [Comment]
+  user: User
+  type: PostType
+  created_at: DateTime
+  reactions: [PostReactionsResponse]
+}
+
+type PostReactionsResponse {
+  count: Int
+  type: ReactType
+}
+
+type Comment {
+  id: ID
+  content: String
+  post: Post
+  user: User
+}
+
+type React {
+  id: ID
+  type: PostType
+}
+
+type PaginatedPosts {
+  data: [Post]
+  meta: PaginationMeta
+}
+
+input CreatePostInput {
+  content: String
+  type: PostType
+}
+
+input CreateReactionInput {
+  postId: ID
+  reactType: ReactType
+}
+
+input CreateCommentInput {
+  postId: ID
+  content: String
+}
+
+type Skill {
+  id: ID
+  name: String
+}
+
+input CreateSkillInput {
+  skillId: ID
+  name: String
+}
+
+enum UserType {
+  EMPLOYEE
+  COMPANY
+}
+
+type User {
+  id: ID!
+  email: String!
+  user_type: UserType
+  employee: Employee
+  company: Company
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+scalar Upload
+
+type Country {
+  id: ID
+  name: String
+}
+
+type City {
+  id: ID
+  name: String
+}

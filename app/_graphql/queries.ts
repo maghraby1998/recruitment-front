@@ -234,6 +234,64 @@ export const GET_POSITIONS = gql`
   }
 `;
 
+export const GET_POSTS = gql`
+  query GetPosts($pagination: PaginationInput) {
+    posts(pagination: $pagination) {
+      data {
+        id
+        content
+        type
+        created_at
+        user {
+          id
+          user_type
+          employee {
+            firstName
+            lastName
+            imgPath
+            position {
+              title
+            }
+          }
+          company {
+            name
+            imgPath
+          }
+        }
+        comments {
+          id
+          content
+          user {
+            id
+            user_type
+            employee {
+              firstName
+              lastName
+              imgPath
+            }
+            company {
+              name
+              imgPath
+            }
+          }
+        }
+        reactions {
+          count
+          type
+        }
+      }
+      meta {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
+    }
+  }
+`;
+
 export const GET_SKILLS_BASED_ON_POSITIONS = gql`
   query GenerateSkills($position: String) {
     generateSkills(position: $position)

@@ -25,6 +25,7 @@ type Mutation {
   createPost(input: CreatePostInput): Post
   createReact(input: CreateReactionInput): React
   createComment(input: CreateCommentInput): Comment
+  deleteReaction(postId: ID): React
   createSkill(input: CreateSkillInput): Skill
   deleteSkill(id: ID!): Skill
   signIn(input: SignInInput!): User!
@@ -244,6 +245,7 @@ type Post {
   type: PostType
   created_at: DateTime
   reactions: [PostReactionsResponse]
+  authReaction: ReactType
 }
 
 type PostReactionsResponse {

@@ -2,13 +2,13 @@
 
 import { GET_POSTS } from "@/app/_graphql/queries";
 import {
-  CREATE_POST,
   CREATE_COMMENT,
   CREATE_REACTION,
   DELETE_REACTION,
 } from "@/app/_graphql/mutations";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useState, type ChangeEvent, useRef } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { IconSend, IconMessageCircle } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
@@ -389,10 +389,7 @@ function PostCard({
 }
 
 export default function FeedsPage() {
-  const [newPostContent, setNewPostContent] = useState("");
-  const [newPostType, setNewPostType] = useState<PostType>(PostType.OTHER);
-
-  const { data, loading, refetch } = useQuery(GET_POSTS, {
+  const { data, loading } = useQuery(GET_POSTS, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: "network-only",
     variables: {
@@ -416,15 +413,7 @@ export default function FeedsPage() {
     refetch: () => void;
   };
 
-  const [createPost] = useMutation(CREATE_POST, {
-    onCompleted: () => {
-      setNewPostContent("");
-      setNewPostType(PostType.OTHER);
-    },
-    refetchQueries: [
-      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
-    ],
-  });
+  const router = useRouter();
 
   const [createComment] = useMutation(CREATE_COMMENT, {
     refetchQueries: [
@@ -445,19 +434,6 @@ export default function FeedsPage() {
   });
 
   const posts = data?.posts?.data ?? [];
-
-  const handleCreatePost = () => {
-    if (newPostContent.trim()) {
-      createPost({
-        variables: {
-          input: {
-            content: newPostContent,
-            type: newPostType,
-          },
-        },
-      });
-    }
-  };
 
   const handleAddComment = (postId: string, content: string) => {
     createComment({
@@ -497,44 +473,13 @@ export default function FeedsPage() {
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Create Post</h2>
-          </CardHeader>
-          <CardContent>
-            <textarea
-              placeholder="What's on your mind?"
-              value={newPostContent}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                setNewPostContent(e.target.value)
-              }
-              className={cn(
-                "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                "mb-3",
-              )}
-              rows={3}
-            />
-            <div className="flex gap-2 items-center">
-              <Select
-                value={newPostType}
-                onValueChange={(value) => setNewPostType(value as PostType)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Post Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PostType.CELEBRATION}>
-                    Celebration
-                  </SelectItem>
-                  <SelectItem value={PostType.ANNOUNCEMENT}>
-                    Announcement
-                  </SelectItem>
-                  <SelectItem value={PostType.OPINION}>Opinion</SelectItem>
-                  <SelectItem value={PostType.QUESTION}>Question</SelectItem>
-                  <SelectItem value={PostType.OTHER}>Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button onClick={handleCreatePost}>Post</Button>
-            </div>
+          <CardContent className="pt-4">
+            <button
+              onClick={() => router.push("/feeds/create")}
+              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-500"
+            >
+              Start a post...
+            </button>
           </CardContent>
         </Card>
       </div>

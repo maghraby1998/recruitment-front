@@ -279,6 +279,7 @@ export const GET_POSTS = gql`
           count
           type
         }
+        authReaction
       }
       meta {
         totalItems

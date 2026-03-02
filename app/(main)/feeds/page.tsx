@@ -5,11 +5,12 @@ import {
   CREATE_POST,
   CREATE_COMMENT,
   CREATE_REACTION,
+  DELETE_REACTION,
 } from "@/app/_graphql/mutations";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, useRef } from "react";
 import Image from "next/image";
-import { IconSend } from "@tabler/icons-react";
+import { IconSend, IconMessageCircle } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,7 @@ type Post = {
   user: PostUser;
   comments: Comment[];
   reactions: PostReaction[];
+  authReaction?: ReactType;
 };
 
 const REACTION_EMOJIS: Record<ReactType, string> = {
@@ -104,6 +106,14 @@ const REACTION_EMOJIS: Record<ReactType, string> = {
   [ReactType.CELEBRATE]: "🎉",
 };
 
+const POST_TYPE_LABELS: Record<PostType, string> = {
+  [PostType.CELEBRATION]: "celebrating",
+  [PostType.ANNOUNCEMENT]: "announcing",
+  [PostType.OPINION]: "sharing an opinion",
+  [PostType.QUESTION]: "asking",
+  [PostType.OTHER]: "",
+};
+
 function PostCard({
   post,
   onAddComment,
@@ -111,10 +121,29 @@ function PostCard({
 }: {
   post: Post;
   onAddComment: (postId: string, content: string) => void;
-  onReact: (postId: string, reactType: ReactType) => void;
+  onReact: (
+    postId: string,
+    reactType: ReactType,
+    currentAuthReaction?: ReactType,
+  ) => void;
 }) {
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+  const reactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnterReactions = () => {
+    if (reactionTimeoutRef.current) {
+      clearTimeout(reactionTimeoutRef.current);
+    }
+    setShowReactions(true);
+  };
+
+  const handleMouseLeaveReactions = () => {
+    reactionTimeoutRef.current = setTimeout(() => {
+      setShowReactions(false);
+    }, 200);
+  };
 
   const user = post.user;
   const isEmployee = user.user_type === UserType.EMPLOYEE;
@@ -125,6 +154,11 @@ function PostCard({
 
   const userImage = isEmployee ? user.employee?.imgPath : user.company?.imgPath;
   const userPosition = isEmployee ? user.employee?.position?.title : undefined;
+
+  const totalReactions =
+    post.reactions?.reduce((sum, r) => sum + r.count, 0) ?? 0;
+
+  const getDefaultReaction = () => post.authReaction ?? ReactType.LIKE;
 
   const handleSubmitComment = () => {
     if (commentText.trim()) {
@@ -168,74 +202,118 @@ function PostCard({
             />
           )}
           <div>
-            <p className="font-semibold">{userName}</p>
+            <p className="font-semibold">
+              {userName}
+              {POST_TYPE_LABELS[post.type] && (
+                <span className="font-normal text-gray-500">
+                  {" "}
+                  is {POST_TYPE_LABELS[post.type]}
+                </span>
+              )}
+            </p>
             <p className="text-sm text-gray-500">
               {userPosition && `${userPosition} • `}
               {moment(post.created_at).fromNow()}
             </p>
           </div>
-          <span className="ml-auto bg-cyan-100 text-cyan-700 text-xs px-2 py-1 rounded">
-            {post.type}
-          </span>
         </div>
       </CardHeader>
       <CardContent>
         <p className="mb-4">{post.content}</p>
 
         {post.reactions && post.reactions.length > 0 && (
-          <div className="flex gap-2 mb-3 flex-wrap">
-            {post.reactions.map((reaction) => (
-              <div
-                key={reaction.type}
-                className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1 text-sm"
-              >
-                <span>{REACTION_EMOJIS[reaction.type]}</span>
-                <span className="text-gray-600">{reaction.count}</span>
-              </div>
-            ))}
+          <div className="flex items-center gap-2 mb-3 relative z-0">
+            <div className="flex -space-x-2">
+              {post.reactions.slice(0, 3).map((reaction, idx) => (
+                <div
+                  key={reaction.type}
+                  className="w-6 h-6 rounded-full bg-white border-2 border-white flex items-center justify-center text-xs"
+                  style={{ zIndex: 3 - idx }}
+                  title={`${reaction.count} ${reaction.type}`}
+                >
+                  {REACTION_EMOJIS[reaction.type]}
+                </div>
+              ))}
+            </div>
+            <span className="text-sm text-gray-600">{totalReactions}</span>
           </div>
         )}
 
         <div className="flex gap-2 mb-4">
-          {Object.values(ReactType).map((reactType) => (
+          <div
+            className="relative inline-block"
+            onMouseEnter={handleMouseEnterReactions}
+            onMouseLeave={handleMouseLeaveReactions}
+          >
             <Button
-              key={reactType}
               variant="outline"
               size="sm"
-              onClick={() => onReact(post.id, reactType)}
-              className="text-lg px-2 py-1"
+              onClick={() =>
+                onReact(post.id, getDefaultReaction(), post.authReaction)
+              }
+              className={cn(
+                "text-lg px-3 py-1",
+                post.authReaction && "text-blue-600 border-blue-400 bg-blue-50",
+              )}
             >
-              {REACTION_EMOJIS[reactType]}
+              {REACTION_EMOJIS[getDefaultReaction()]}
+              <span className="ml-1 text-sm">
+                {post.authReaction ? post.authReaction : "Like"}
+              </span>
             </Button>
-          ))}
+            {showReactions && (
+              <div className="absolute bottom-full mb-2 left-0 bg-white rounded-full shadow-lg border px-2 py-1 flex gap-1 z-50">
+                {Object.values(ReactType).map((reactType) => (
+                  <button
+                    key={reactType}
+                    onClick={() => {
+                      onReact(post.id, reactType, post.authReaction);
+                      setShowReactions(false);
+                    }}
+                    className={cn(
+                      "text-xl p-1 hover:bg-gray-100 rounded-full transition-transform hover:scale-125",
+                      post.authReaction === reactType && "bg-blue-50",
+                    )}
+                    title={reactType}
+                  >
+                    {REACTION_EMOJIS[reactType]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowComments(true)}
+            className={cn(
+              "text-lg px-3 py-1",
+              showComments && "text-blue-600 border-blue-400 bg-blue-50",
+            )}
+          >
+            <IconMessageCircle className="w-4 h-4 mr-1" />
+            <span className="text-sm">{post.comments.length}</span>
+          </Button>
         </div>
 
         <div className="border-t pt-3">
-          <div className="flex gap-2 mb-3">
-            <Input
-              placeholder="Write a comment..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSubmitComment()}
-            />
-            <Button onClick={handleSubmitComment} size="icon">
-              <IconSend className="w-4 h-4" />
-            </Button>
-          </div>
+          {showComments && (
+            <>
+              <div className="flex gap-2 mb-3">
+                <Input
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSubmitComment()}
+                />
+                <Button onClick={handleSubmitComment} size="icon">
+                  <IconSend className="w-4 h-4" />
+                </Button>
+              </div>
 
-          {post.comments.length > 0 && (
-            <div>
-              <Button
-                variant="link"
-                onClick={() => setShowComments(!showComments)}
-                className="p-0 mb-2"
-              >
-                {showComments ? "Hide" : "Show"} {post.comments.length} comment
-                {post.comments.length !== 1 ? "s" : ""}
-              </Button>
-
-              {showComments && (
-                <div className="space-y-2">
+              {post.comments.length > 0 && (
+                <div className="space-y-2 bg-gray-50 p-3 rounded-lg">
                   {post.comments.map((comment) => {
                     const commentUser = comment.user;
                     const isCommentEmployee =
@@ -250,17 +328,17 @@ function PostCard({
                     return (
                       <div
                         key={comment.id}
-                        className="bg-gray-50 p-2 rounded text-sm"
+                        className="bg-white p-2 rounded text-sm flex gap-2 items-start"
                       >
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex gap-2">
                           {commentUserImage ? (
                             <Image
                               src={`${BACKEND_URL}${commentUserImage}`}
                               alt={commentUserName}
-                              width={20}
-                              height={20}
+                              width={25}
+                              height={25}
                               className="rounded-[50%] object-cover"
-                              style={{ width: 20, height: 20 }}
+                              style={{ width: 25, height: 25 }}
                               unoptimized
                             />
                           ) : (
@@ -290,17 +368,19 @@ function PostCard({
                               size="sm"
                             />
                           )}
-                          <span className="font-semibold text-xs">
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">
                             {commentUserName}
                           </span>
+                          <p className="text-gray-700">{comment.content}</p>
                         </div>
-                        <p className="text-gray-700">{comment.content}</p>
                       </div>
                     );
                   })}
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </CardContent>
@@ -340,20 +420,28 @@ export default function FeedsPage() {
     onCompleted: () => {
       setNewPostContent("");
       setNewPostType(PostType.OTHER);
-      refetch();
     },
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
   });
 
   const [createComment] = useMutation(CREATE_COMMENT, {
-    onCompleted: () => {
-      refetch();
-    },
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
   });
 
   const [createReaction] = useMutation(CREATE_REACTION, {
-    onCompleted: () => {
-      refetch();
-    },
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
+  });
+
+  const [deleteReaction] = useMutation(DELETE_REACTION, {
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
   });
 
   const posts = data?.posts?.data ?? [];
@@ -382,15 +470,27 @@ export default function FeedsPage() {
     });
   };
 
-  const handleReact = (postId: string, reactType: ReactType) => {
-    createReaction({
-      variables: {
-        input: {
+  const handleReact = (
+    postId: string,
+    reactType: ReactType,
+    currentAuthReaction?: ReactType,
+  ) => {
+    if (currentAuthReaction === reactType) {
+      deleteReaction({
+        variables: {
           postId,
-          reactType,
         },
-      },
-    });
+      });
+    } else {
+      createReaction({
+        variables: {
+          input: {
+            postId,
+            reactType,
+          },
+        },
+      });
+    }
   };
 
   return (

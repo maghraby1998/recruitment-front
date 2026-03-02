@@ -120,3 +120,11 @@ export const CREATE_REACTION = gql`
     }
   }
 `;
+
+export const DELETE_REACTION = gql`
+  mutation DeleteReaction($postId: ID!) {
+    deleteReaction(postId: $postId) {
+      id
+    }
+  }
+`;

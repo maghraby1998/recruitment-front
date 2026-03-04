@@ -158,6 +158,8 @@ function PostCard({
   const totalReactions =
     post.reactions?.reduce((sum, r) => sum + r.count, 0) ?? 0;
 
+  const reactionsWithCount = post.reactions?.filter((r) => r.count > 0) ?? [];
+
   const getDefaultReaction = () => post.authReaction ?? ReactType.LIKE;
 
   const handleSubmitComment = () => {
@@ -221,10 +223,10 @@ function PostCard({
       <CardContent>
         <p className="mb-4">{post.content}</p>
 
-        {post.reactions && post.reactions.length > 0 && (
+        {totalReactions > 0 && (
           <div className="flex items-center gap-2 mb-3 relative z-0">
             <div className="flex -space-x-2">
-              {post.reactions.slice(0, 3).map((reaction, idx) => (
+              {reactionsWithCount.slice(0, 3).map((reaction, idx) => (
                 <div
                   key={reaction.type}
                   className="w-6 h-6 rounded-full bg-white border-2 border-white flex items-center justify-center text-xs"

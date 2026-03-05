@@ -47,7 +47,7 @@ export function proxy(request: NextRequest) {
 
     // Redirect employees away from company routes
     if (userType === "EMPLOYEE" && isCompanyRoute) {
-      return NextResponse.redirect(new URL("/jobs", request.url));
+      return NextResponse.redirect(new URL("/feeds", request.url));
     }
 
     // Redirect companies away from employee routes
@@ -57,11 +57,11 @@ export function proxy(request: NextRequest) {
 
     // Redirect from root to appropriate dashboard
     if (pathname === "/") {
-      if (userType === "COMPANY") {
-        return NextResponse.redirect(new URL("/jobs", request.url));
-      } else {
-        return NextResponse.redirect(new URL("/jobs", request.url));
-      }
+      // if (userType === "COMPANY") {
+      return NextResponse.redirect(new URL("/feeds", request.url));
+      // } else {
+      //   return NextResponse.redirect(new URL("/jobs", request.url));
+      // }
     }
 
     return NextResponse.next();

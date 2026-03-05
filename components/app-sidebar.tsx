@@ -154,6 +154,11 @@ const data = {
 
 const employeeLinks = [
   {
+    title: "Feeds",
+    url: "/feeds",
+    icon: IconDashboard,
+  },
+  {
     title: "Jobs",
     url: "/jobs",
     icon: IconDashboard,
@@ -163,14 +168,14 @@ const employeeLinks = [
     url: "/my-applications",
     icon: IconDashboard,
   },
+];
+
+const companyLinks = [
   {
     title: "Feeds",
     url: "/feeds",
     icon: IconDashboard,
   },
-];
-
-const companyLinks = [
   {
     title: "Jobs",
     url: "/jobs",
@@ -182,11 +187,6 @@ const companyLinks = [
     icon: IconDashboard,
     actionIcon: IconPlus,
     actionUrl: "/job-posts/new",
-  },
-  {
-    title: "Feeds",
-    url: "/feeds",
-    icon: IconDashboard,
   },
 ];
 

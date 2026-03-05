@@ -95,6 +95,7 @@ type Post = {
   comments: Comment[];
   reactions: PostReaction[];
   authReaction?: ReactType;
+  imagesPaths?: string[];
 };
 
 const REACTION_EMOJIS: Record<ReactType, string> = {
@@ -127,6 +128,7 @@ function PostCard({
     currentAuthReaction?: ReactType,
   ) => void;
 }) {
+  const router = useRouter();
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
@@ -167,6 +169,103 @@ function PostCard({
       onAddComment(post.id, commentText);
       setCommentText("");
     }
+  };
+
+  const handleOpenImageViewer = (index: number) => {
+    const images = post.imagesPaths || [];
+    const encodedImages = encodeURIComponent(JSON.stringify(images));
+    router.push(`/feeds/${post.id}/image?index=${index}&images=${encodedImages}`);
+  };
+
+  const renderImages = () => {
+    const images = post.imagesPaths || [];
+    if (images.length === 0) return null;
+
+    if (images.length === 1) {
+      return (
+        <div 
+          className="relative rounded-lg overflow-hidden cursor-pointer mb-4"
+          onClick={() => handleOpenImageViewer(0)}
+        >
+          <Image
+            src={`${BACKEND_URL}${images[0]}`}
+            alt="Post image"
+            width={600}
+            height={400}
+            className="w-full h-auto object-cover"
+            unoptimized
+          />
+        </div>
+      );
+    }
+
+    if (images.length === 2) {
+      return (
+        <div className="grid grid-cols-2 gap-1 mb-4 rounded-lg overflow-hidden">
+          {images.map((imagePath, idx) => (
+            <div 
+              key={idx} 
+              className="relative aspect-square cursor-pointer"
+              onClick={() => handleOpenImageViewer(idx)}
+            >
+              <Image
+                src={`${BACKEND_URL}${imagePath}`}
+                alt={`Post image ${idx + 1}`}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-1 mb-4 rounded-lg overflow-hidden">
+        <div 
+          className="relative row-span-2 aspect-[3/4] md:aspect-auto cursor-pointer"
+          onClick={() => handleOpenImageViewer(0)}
+        >
+          <Image
+            src={`${BACKEND_URL}${images[0]}`}
+            alt="Post image 1"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+        <div 
+          className="relative aspect-square cursor-pointer"
+          onClick={() => handleOpenImageViewer(1)}
+        >
+          <Image
+            src={`${BACKEND_URL}${images[1]}`}
+            alt="Post image 2"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+        <div 
+          className="relative aspect-square cursor-pointer"
+          onClick={() => handleOpenImageViewer(2)}
+        >
+          <Image
+            src={`${BACKEND_URL}${images[2]}`}
+            alt="Post image 3"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+          {images.length > 3 && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <span className="text-white text-xl font-semibold">+{images.length - 3}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -222,6 +321,8 @@ function PostCard({
       </CardHeader>
       <CardContent>
         <p className="mb-4">{post.content}</p>
+
+        {renderImages()}
 
         {totalReactions > 0 && (
           <div className="flex items-center gap-2 mb-3 relative z-0">

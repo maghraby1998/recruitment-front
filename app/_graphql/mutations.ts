@@ -93,8 +93,8 @@ export const CHANGE_PROFILE_IMAGE = gql`
 `;
 
 export const CREATE_POST = gql`
-  mutation CreatePost($input: CreatePostInput) {
-    createPost(input: $input) {
+  mutation CreatePost($input: CreatePostInput, $images: [Upload]) {
+    createPost(input: $input, images: $images) {
       id
       content
       type

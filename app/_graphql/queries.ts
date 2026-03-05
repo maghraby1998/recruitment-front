@@ -280,6 +280,7 @@ export const GET_POSTS = gql`
           type
         }
         authReaction
+        imagesPaths
       }
       meta {
         totalItems

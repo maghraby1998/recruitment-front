@@ -294,6 +294,9 @@ export const GET_POSTS = gql`
               firstName
               lastName
               imgPath
+              position {
+                title
+              }
             }
             company {
               name
@@ -328,5 +331,49 @@ export const GET_POSTS = gql`
 export const GET_SKILLS_BASED_ON_POSITIONS = gql`
   query GenerateSkills($position: String) {
     generateSkills(position: $position)
+  }
+`;
+
+export const GET_USER = gql`
+  query GetUser($userId: ID!) {
+    getUser(userId: $userId) {
+      id
+      email
+      user_type
+      employee {
+        id
+        firstName
+        lastName
+        imgPath
+        position {
+          id
+          title
+        }
+        skills {
+          id
+          name
+        }
+        experiences {
+          id
+          position {
+            id
+            title
+          }
+          description
+          company {
+            id
+            name
+            imgPath
+          }
+          companyName
+          from
+          to
+        }
+      }
+      company {
+        name
+        imgPath
+      }
+    }
   }
 `;

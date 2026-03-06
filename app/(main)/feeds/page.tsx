@@ -28,6 +28,7 @@ import { UserType } from "@/components/context-provider";
 import moment from "moment";
 import { BACKEND_URL } from "@/app/_config";
 import { cn } from "@/lib/utils";
+import { UserHoverCard } from "@/components/user-hover-card";
 
 enum PostType {
   CELEBRATION = "CELEBRATION",
@@ -70,6 +71,9 @@ type CommentUser = {
     firstName: string;
     lastName: string;
     imgPath: string;
+    position?: {
+      title: string;
+    };
   };
   company?: {
     name: string;
@@ -242,7 +246,11 @@ function CommentItem({
         </div>
         <div className="flex flex-col flex-1">
           <div className="bg-gray-100 rounded-lg p-2">
-            <span className="font-semibold text-xs">{commentUserName}</span>
+            <span className="font-semibold text-xs">
+              <UserHoverCard user={commentUser as any}>
+                {commentUserName}
+              </UserHoverCard>
+            </span>
             <p className="text-gray-700">{comment.content}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -545,15 +553,15 @@ function PostCard({
             />
           )}
           <div>
-            <p className="font-semibold">
-              {userName}
+            <div className="font-semibold">
+              <UserHoverCard user={user}>{userName}</UserHoverCard>
               {POST_TYPE_LABELS[post.type] && (
                 <span className="font-normal text-gray-500">
                   {" "}
                   is {POST_TYPE_LABELS[post.type]}
                 </span>
               )}
-            </p>
+            </div>
             <p className="text-sm text-gray-500">
               {userPosition && `${userPosition} • `}
               {moment(post.created_at).fromNow()}

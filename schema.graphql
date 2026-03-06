@@ -59,6 +59,7 @@ type Query {
   generateSkills(position: String): [String]
   users: [User!]!
   getAuthUser: User!
+  getUser(userId: ID): User!
 }
 
 input AnswerInput {

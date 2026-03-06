@@ -29,6 +29,7 @@ import moment from "moment";
 import { BACKEND_URL } from "@/app/_config";
 import { cn } from "@/lib/utils";
 import { UserHoverCard } from "@/components/user-hover-card";
+import { gql } from "@apollo/client";
 
 enum PostType {
   CELEBRATION = "CELEBRATION",
@@ -205,7 +206,12 @@ function CommentItem({
 
   return (
     <div className={cn("mt-2", depth > 0 && "ml-6")}>
-      <div className={cn("bg-white p-2 rounded text-sm flex gap-2 items-start", depth > 0 && "border-l-2 border-gray-200")}>
+      <div
+        className={cn(
+          "bg-white p-2 rounded text-sm flex gap-2 items-start",
+          depth > 0 && "border-l-2 border-gray-200",
+        )}
+      >
         <div className="flex gap-2">
           {commentUserImage ? (
             <Image

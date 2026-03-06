@@ -22,10 +22,12 @@ type Mutation {
   createJobPost(input: CreateJobPostInput): JobPost
   deleteJobPost(id: ID!): JobPost
   toggleJobPostStatus(id: ID!): JobPost
-  createPost(input: CreatePostInput, images: [String]): Post
+  createPost(input: CreatePostInput, images: [Upload]): Post
   createReact(input: CreateReactionInput): React
   createComment(input: CreateCommentInput): Comment
   deleteReaction(postId: ID): React
+  createCommentReaction(input: CreateCommentReactionInput): React
+  deleteCommentReaction(commentId: ID): React
   createSkill(input: CreateSkillInput): Skill
   deleteSkill(id: ID!): Skill
   signIn(input: SignInInput!): User!
@@ -48,8 +50,7 @@ type Query {
   myJobPosts(pagination: PaginationInput): PaginatedJobPosts
   jobPost(id: ID!): JobPost
   positions(name: String): [Position]
-  posts(pagination: PaginationInput, postId: ID): PaginatedPosts
-  post(id: ID!): Post
+  posts(pagination: PaginationInput): PaginatedPosts
   skills(search: String): [Skill]
   getMySkills: [Skill]
   generateSkills(position: String): [String]
@@ -260,11 +261,14 @@ type Comment {
   content: String
   post: Post
   user: User
+  parentId: ID
+  reactions: [PostReactionsResponse]
+  authReaction: ReactType
 }
 
 type React {
   id: ID
-  type: PostType
+  type: ReactType
 }
 
 type PaginatedPosts {
@@ -282,9 +286,15 @@ input CreateReactionInput {
   reactType: ReactType
 }
 
+input CreateCommentReactionInput {
+  commentId: ID
+  reactType: ReactType
+}
+
 input CreateCommentInput {
   postId: ID
   content: String
+  parentId: ID
 }
 
 type Skill {

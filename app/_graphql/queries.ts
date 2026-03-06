@@ -261,6 +261,7 @@ export const GET_POSTS = gql`
         comments {
           id
           content
+          parentId
           user {
             id
             user_type
@@ -274,6 +275,11 @@ export const GET_POSTS = gql`
               imgPath
             }
           }
+          reactions {
+            count
+            type
+          }
+          authReaction
         }
         reactions {
           count

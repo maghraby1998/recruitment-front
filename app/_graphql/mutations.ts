@@ -128,3 +128,20 @@ export const DELETE_REACTION = gql`
     }
   }
 `;
+
+export const CREATE_COMMENT_REACTION = gql`
+  mutation CreateCommentReaction($input: CreateCommentReactionInput!) {
+    createCommentReaction(input: $input) {
+      id
+      type
+    }
+  }
+`;
+
+export const DELETE_COMMENT_REACTION = gql`
+  mutation DeleteCommentReaction($commentId: ID!) {
+    deleteCommentReaction(commentId: $commentId) {
+      id
+    }
+  }
+`;

@@ -5,6 +5,8 @@ import {
   CREATE_COMMENT,
   CREATE_REACTION,
   DELETE_REACTION,
+  CREATE_COMMENT_REACTION,
+  DELETE_COMMENT_REACTION,
 } from "@/app/_graphql/mutations";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useState, useRef } from "react";
@@ -75,10 +77,18 @@ type CommentUser = {
   };
 };
 
+type CommentReaction = {
+  count: number;
+  type: ReactType;
+};
+
 type Comment = {
   id: string;
   content: string;
   user: CommentUser;
+  reactions: CommentReaction[];
+  authReaction?: ReactType;
+  parentId?: string | null;
 };
 
 type PostReaction = {
@@ -107,6 +117,226 @@ const REACTION_EMOJIS: Record<ReactType, string> = {
   [ReactType.CELEBRATE]: "🎉",
 };
 
+type CommentWithReplies = Comment & { replies: CommentWithReplies[] };
+
+function buildCommentTree(comments: Comment[]): CommentWithReplies[] {
+  const commentMap = new Map<string, CommentWithReplies>();
+  const rootComments: CommentWithReplies[] = [];
+
+  comments.forEach((comment) => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
+
+  comments.forEach((comment) => {
+    const commentWithReplies = commentMap.get(comment.id)!;
+    if (comment.parentId && commentMap.has(comment.parentId)) {
+      commentMap.get(comment.parentId)!.replies.push(commentWithReplies);
+    } else {
+      rootComments.push(commentWithReplies);
+    }
+  });
+
+  return rootComments;
+}
+
+function CommentItem({
+  comment,
+  postId,
+  onReactComment,
+  onAddReply,
+  depth = 0,
+}: {
+  comment: CommentWithReplies;
+  postId: string;
+  onReactComment: (
+    commentId: string,
+    reactType: ReactType,
+    currentAuthReaction?: ReactType,
+  ) => void;
+  onAddReply: (postId: string, parentId: string, content: string) => void;
+  depth?: number;
+}) {
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [showReactions, setShowReactions] = useState(false);
+  const reactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const commentUser = comment.user;
+  const isCommentEmployee = commentUser.user_type === UserType.EMPLOYEE;
+  const commentUserName = isCommentEmployee
+    ? `${commentUser.employee?.firstName} ${commentUser.employee?.lastName}`
+    : (commentUser.company?.name ?? "Unknown");
+  const commentUserImage = isCommentEmployee
+    ? commentUser.employee?.imgPath
+    : commentUser.company?.imgPath;
+
+  const totalReactions =
+    comment.reactions?.reduce((sum, r) => sum + r.count, 0) ?? 0;
+
+  const reactionsWithCount =
+    comment.reactions?.filter((r) => r.count > 0) ?? [];
+
+  const handleMouseEnterReactions = () => {
+    if (reactionTimeoutRef.current) {
+      clearTimeout(reactionTimeoutRef.current);
+    }
+    setShowReactions(true);
+  };
+
+  const handleMouseLeaveReactions = () => {
+    reactionTimeoutRef.current = setTimeout(() => {
+      setShowReactions(false);
+    }, 200);
+  };
+
+  const handleSubmitReply = () => {
+    if (replyText.trim()) {
+      onAddReply(postId, comment.id, replyText);
+      setReplyText("");
+      setShowReplyInput(false);
+    }
+  };
+
+  const getDefaultReaction = () => comment.authReaction ?? ReactType.LIKE;
+
+  return (
+    <div className={cn("mt-2", depth > 0 && "ml-6")}>
+      <div className={cn("bg-white p-2 rounded text-sm flex gap-2 items-start", depth > 0 && "border-l-2 border-gray-200")}>
+        <div className="flex gap-2">
+          {commentUserImage ? (
+            <Image
+              src={`${BACKEND_URL}${commentUserImage}`}
+              alt={commentUserName}
+              width={depth > 0 ? 20 : 25}
+              height={depth > 0 ? 20 : 25}
+              className="rounded-[50%] object-cover"
+              style={{
+                width: depth > 0 ? 20 : 25,
+                height: depth > 0 ? 20 : 25,
+              }}
+              unoptimized
+            />
+          ) : (
+            <UserAvatar
+              employee={
+                isCommentEmployee
+                  ? {
+                      firstName: commentUser.employee?.firstName ?? "",
+                      lastName: commentUser.employee?.lastName ?? "",
+                      imgPath: "",
+                    }
+                  : undefined
+              }
+              company={
+                !isCommentEmployee
+                  ? {
+                      name: commentUser.company?.name ?? "",
+                      imgPath: "",
+                    }
+                  : undefined
+              }
+              userType={isCommentEmployee ? "EMPLOYEE" : "COMPANY"}
+              size={depth > 0 ? "sm" : "sm"}
+            />
+          )}
+        </div>
+        <div className="flex flex-col flex-1">
+          <div className="bg-gray-100 rounded-lg p-2">
+            <span className="font-semibold text-xs">{commentUserName}</span>
+            <p className="text-gray-700">{comment.content}</p>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <div
+              className="relative"
+              onMouseEnter={handleMouseEnterReactions}
+              onMouseLeave={handleMouseLeaveReactions}
+            >
+              <button
+                onClick={() =>
+                  onReactComment(
+                    comment.id,
+                    getDefaultReaction(),
+                    comment.authReaction,
+                  )
+                }
+                className={cn(
+                  "text-xs hover:underline",
+                  comment.authReaction && "text-blue-600 font-semibold",
+                )}
+              >
+                {comment.authReaction
+                  ? REACTION_EMOJIS[comment.authReaction]
+                  : "Like"}
+                {totalReactions > 0 && ` (${totalReactions})`}
+              </button>
+              {showReactions && (
+                <div className="absolute bottom-full mb-1 left-0 bg-white rounded-full shadow-lg border px-1 py-0.5 flex gap-0.5 z-50">
+                  {Object.values(ReactType).map((reactType) => (
+                    <button
+                      key={reactType}
+                      onClick={() => {
+                        onReactComment(
+                          comment.id,
+                          reactType,
+                          comment.authReaction,
+                        );
+                        setShowReactions(false);
+                      }}
+                      className={cn(
+                        "text-sm p-0.5 hover:bg-gray-100 rounded-full transition-transform hover:scale-125",
+                        comment.authReaction === reactType && "bg-blue-50",
+                      )}
+                      title={reactType}
+                    >
+                      {REACTION_EMOJIS[reactType]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowReplyInput(!showReplyInput)}
+              className="text-xs text-gray-500 hover:underline"
+            >
+              Reply
+            </button>
+          </div>
+
+          {showReplyInput && (
+            <div className="flex gap-1 mt-2">
+              <Input
+                placeholder="Write a reply..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSubmitReply()}
+                className="h-7 text-xs"
+              />
+              <Button onClick={handleSubmitReply} size="sm" className="h-7">
+                <IconSend className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-1">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              postId={postId}
+              onReactComment={onReactComment}
+              onAddReply={onAddReply}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const POST_TYPE_LABELS: Record<PostType, string> = {
   [PostType.CELEBRATION]: "celebrating",
   [PostType.ANNOUNCEMENT]: "announcing",
@@ -119,6 +349,8 @@ function PostCard({
   post,
   onAddComment,
   onReact,
+  onReactComment,
+  onAddReply,
 }: {
   post: Post;
   onAddComment: (postId: string, content: string) => void;
@@ -127,6 +359,12 @@ function PostCard({
     reactType: ReactType,
     currentAuthReaction?: ReactType,
   ) => void;
+  onReactComment: (
+    commentId: string,
+    reactType: ReactType,
+    currentAuthReaction?: ReactType,
+  ) => void;
+  onAddReply: (postId: string, parentId: string, content: string) => void;
 }) {
   const router = useRouter();
   const [commentText, setCommentText] = useState("");
@@ -174,7 +412,9 @@ function PostCard({
   const handleOpenImageViewer = (index: number) => {
     const images = post.imagesPaths || [];
     const encodedImages = encodeURIComponent(JSON.stringify(images));
-    router.push(`/feeds/${post.id}/image?index=${index}&images=${encodedImages}`);
+    router.push(
+      `/feeds/${post.id}/image?index=${index}&images=${encodedImages}`,
+    );
   };
 
   const renderImages = () => {
@@ -183,7 +423,7 @@ function PostCard({
 
     if (images.length === 1) {
       return (
-        <div 
+        <div
           className="relative rounded-lg overflow-hidden cursor-pointer mb-4"
           onClick={() => handleOpenImageViewer(0)}
         >
@@ -203,8 +443,8 @@ function PostCard({
       return (
         <div className="grid grid-cols-2 gap-1 mb-4 rounded-lg overflow-hidden">
           {images.map((imagePath, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="relative aspect-square cursor-pointer"
               onClick={() => handleOpenImageViewer(idx)}
             >
@@ -223,7 +463,7 @@ function PostCard({
 
     return (
       <div className="grid grid-cols-2 gap-1 mb-4 rounded-lg overflow-hidden">
-        <div 
+        <div
           className="relative row-span-2 aspect-[3/4] md:aspect-auto cursor-pointer"
           onClick={() => handleOpenImageViewer(0)}
         >
@@ -235,7 +475,7 @@ function PostCard({
             unoptimized
           />
         </div>
-        <div 
+        <div
           className="relative aspect-square cursor-pointer"
           onClick={() => handleOpenImageViewer(1)}
         >
@@ -247,7 +487,7 @@ function PostCard({
             unoptimized
           />
         </div>
-        <div 
+        <div
           className="relative aspect-square cursor-pointer"
           onClick={() => handleOpenImageViewer(2)}
         >
@@ -260,7 +500,9 @@ function PostCard({
           />
           {images.length > 3 && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-xl font-semibold">+{images.length - 3}</span>
+              <span className="text-white text-xl font-semibold">
+                +{images.length - 3}
+              </span>
             </div>
           )}
         </div>
@@ -417,70 +659,15 @@ function PostCard({
 
               {post.comments.length > 0 && (
                 <div className="space-y-2 bg-gray-50 p-3 rounded-lg">
-                  {post.comments.map((comment) => {
-                    const commentUser = comment.user;
-                    const isCommentEmployee =
-                      commentUser.user_type === UserType.EMPLOYEE;
-                    const commentUserName = isCommentEmployee
-                      ? `${commentUser.employee?.firstName} ${commentUser.employee?.lastName}`
-                      : (commentUser.company?.name ?? "Unknown");
-                    const commentUserImage = isCommentEmployee
-                      ? commentUser.employee?.imgPath
-                      : commentUser.company?.imgPath;
-
-                    return (
-                      <div
-                        key={comment.id}
-                        className="bg-white p-2 rounded text-sm flex gap-2 items-start"
-                      >
-                        <div className="flex gap-2">
-                          {commentUserImage ? (
-                            <Image
-                              src={`${BACKEND_URL}${commentUserImage}`}
-                              alt={commentUserName}
-                              width={25}
-                              height={25}
-                              className="rounded-[50%] object-cover"
-                              style={{ width: 25, height: 25 }}
-                              unoptimized
-                            />
-                          ) : (
-                            <UserAvatar
-                              employee={
-                                isCommentEmployee
-                                  ? {
-                                      firstName:
-                                        commentUser.employee?.firstName ?? "",
-                                      lastName:
-                                        commentUser.employee?.lastName ?? "",
-                                      imgPath: "",
-                                    }
-                                  : undefined
-                              }
-                              company={
-                                !isCommentEmployee
-                                  ? {
-                                      name: commentUser.company?.name ?? "",
-                                      imgPath: "",
-                                    }
-                                  : undefined
-                              }
-                              userType={
-                                isCommentEmployee ? "EMPLOYEE" : "COMPANY"
-                              }
-                              size="sm"
-                            />
-                          )}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">
-                            {commentUserName}
-                          </span>
-                          <p className="text-gray-700">{comment.content}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {buildCommentTree(post.comments).map((comment) => (
+                    <CommentItem
+                      key={comment.id}
+                      comment={comment}
+                      postId={post.id}
+                      onReactComment={onReactComment}
+                      onAddReply={onAddReply}
+                    />
+                  ))}
                 </div>
               )}
             </>
@@ -536,6 +723,18 @@ export default function FeedsPage() {
     ],
   });
 
+  const [createCommentReaction] = useMutation(CREATE_COMMENT_REACTION, {
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
+  });
+
+  const [deleteCommentReaction] = useMutation(DELETE_COMMENT_REACTION, {
+    refetchQueries: [
+      { query: GET_POSTS, variables: { pagination: { page: 1, limit: 20 } } },
+    ],
+  });
+
   const posts = data?.posts?.data ?? [];
 
   const handleAddComment = (postId: string, content: string) => {
@@ -572,6 +771,45 @@ export default function FeedsPage() {
     }
   };
 
+  const handleReactComment = (
+    commentId: string,
+    reactType: ReactType,
+    currentAuthReaction?: ReactType,
+  ) => {
+    if (currentAuthReaction === reactType) {
+      deleteCommentReaction({
+        variables: {
+          commentId,
+        },
+      });
+    } else {
+      createCommentReaction({
+        variables: {
+          input: {
+            commentId,
+            reactType,
+          },
+        },
+      });
+    }
+  };
+
+  const handleAddReply = (
+    postId: string,
+    parentId: string,
+    content: string,
+  ) => {
+    createComment({
+      variables: {
+        input: {
+          postId,
+          parentId,
+          content,
+        },
+      },
+    });
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
@@ -601,6 +839,8 @@ export default function FeedsPage() {
               post={post}
               onAddComment={handleAddComment}
               onReact={handleReact}
+              onReactComment={handleReactComment}
+              onAddReply={handleAddReply}
             />
           ))
         )}

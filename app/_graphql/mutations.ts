@@ -145,3 +145,19 @@ export const DELETE_COMMENT_REACTION = gql`
     }
   }
 `;
+
+export const CREATE_EXPERIENCE = gql`
+  mutation CreateExperience($input: UpsertExperienceInput) {
+    createExperience(input: $input) {
+      id
+    }
+  }
+`;
+
+export const DELETE_EXPERIENCE = gql`
+  mutation DeleteExperience($id: ID!) {
+    deleteExperience(id: $id) {
+      id
+    }
+  }
+`;

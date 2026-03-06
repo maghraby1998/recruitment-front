@@ -63,7 +63,7 @@ export const EmployeeSkillsSection: React.FC<{
         <div className="flex items-center gap-3">
           <h2 className="font-semibold text-lg">Skills</h2>
           <Link href={"/account/new-skill"}>
-            <PlusCircle />
+            <PlusCircle size={20} className="text-gray-600 hover:text-gray-800" />
           </Link>
           <button
             onClick={handleGenerate}

@@ -19,6 +19,8 @@ type Mutation {
   updateApplicationStatus(input: UpdateApplicationStatusInput): Application
   createCompany(input: CreateCompanyInput!, image: Upload): Company!
   createEmployee(input: CreateEmployeeInput!, image: Upload): Employee!
+  createExperience(input: UpsertExperienceInput): Experience
+  deleteExperience(id: ID): Experience
   createJobPost(input: CreateJobPostInput): JobPost
   deleteJobPost(id: ID!): JobPost
   toggleJobPostStatus(id: ID!): JobPost
@@ -45,6 +47,7 @@ type Query {
   getJobPostApplications(jobPostId: ID!, pagination: PaginationInput): PaginatedApplications
   getMyApplications(pagination: PaginationInput): PaginatedApplications
   company(id: ID!): Company!
+  companies(name: String): [Company]
   employee(id: ID!): Employee!
   jobPosts(filter: JobPostsFilterInput, pagination: PaginationInput): PaginatedJobPosts
   myJobPosts(pagination: PaginationInput): PaginatedJobPosts
@@ -99,6 +102,8 @@ type Employee {
   country: Country
   city: City
   position: Position
+  skills: [Skill]
+  experiences: [Experience]
 }
 
 input CreateEmployeeInput {
@@ -109,6 +114,27 @@ input CreateEmployeeInput {
   confirmPassword: String!
   positionId: ID
   positionName: String
+}
+
+type Experience {
+  id: ID
+  employee: Employee
+  position: Position
+  description: String
+  companyName: String
+  company: Company
+  from: DateTime
+  to: DateTime
+}
+
+input UpsertExperienceInput {
+  positionName: String
+  positionId: ID
+  companyName: String
+  companyId: ID
+  description: String
+  from: DateTime
+  to: DateTime
 }
 
 enum JobPostStatus {

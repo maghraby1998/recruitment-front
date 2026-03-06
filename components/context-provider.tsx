@@ -7,6 +7,23 @@ export enum UserType {
   COMPANY = "COMPANY",
 }
 
+export type Experience = {
+  id: number;
+  position: {
+    id: number;
+    title: string;
+  };
+  description: string;
+  company: {
+    id: number;
+    name: string;
+    imgPath: string;
+  } | null;
+  companyName: string;
+  from: string;
+  to: string | null;
+};
+
 export type User = {
   id: string;
   user_type: UserType;
@@ -20,6 +37,7 @@ export type User = {
       id: number;
       title: string;
     };
+    experiences: Experience[];
   };
   company: {
     id: number;

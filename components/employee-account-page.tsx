@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { User } from "./context-provider";
 import Image from "next/image";
 import { EmployeeSkillsSection } from "./employee-skills-section";
+import { EmployeeExperiencesSection } from "./employee-experiences-section";
 import { Card } from "./ui/card";
 import UserAvatar from "./ui/company-avatar";
 import { BACKEND_URL } from "@/app/_config";
@@ -18,7 +19,7 @@ export const EmployeeAccountPage = () => {
   const { data } = useQuery<{ getAuthUser: User }>(GET_AUTH_USER);
   const [changeImage, { loading: changingImage }] = useMutation(
     CHANGE_PROFILE_IMAGE,
-    { refetchQueries: [{ query: GET_AUTH_USER }] }
+    { refetchQueries: [{ query: GET_AUTH_USER }] },
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,15 +81,17 @@ export const EmployeeAccountPage = () => {
         <div>
           <h3 className="capitalize font-bold text-2xl mb-2">{`${employee?.firstName} ${employee?.lastName}`}</h3>
           <h4 className="capitalize font-semibold text-gray-500">
-            {employee.position.title}
+            {employee?.position?.title}
           </h4>
         </div>
       </Card>
 
       <EmployeeSkillsSection
         id={employee?.id}
-        position={employee.position.title}
+        position={employee?.position?.title}
       />
+
+      <EmployeeExperiencesSection />
     </div>
   ) : null;
 };

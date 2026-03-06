@@ -13,6 +13,22 @@ export const GET_AUTH_USER = gql`
           id
           title
         }
+        experiences {
+          id
+          position {
+            id
+            title
+          }
+          description
+          company {
+            id
+            name
+            imgPath
+          }
+          companyName
+          from
+          to
+        }
       }
       company {
         name
@@ -230,6 +246,15 @@ export const GET_POSITIONS = gql`
     positions(name: $name) {
       id
       title
+    }
+  }
+`;
+
+export const GET_COMPANIES = gql`
+  query GetCompanies($name: String) {
+    companies(name: $name) {
+      id
+      name
     }
   }
 `;

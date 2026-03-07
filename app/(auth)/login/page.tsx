@@ -11,6 +11,8 @@ import * as yup from "yup";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN, REGISTER_EMPLOYEE } from "@/app/_graphql/mutations";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { requestPermission } from "@/app/_config/firebase";
 
 type Inputs = {
   email: string;
@@ -26,6 +28,17 @@ const schema = yup
 
 export default function Login() {
   const router = useRouter();
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getToken = async () => {
+      const token = await requestPermission();
+      if (token) {
+        setFcmToken(token);
+      }
+    };
+    getToken();
+  }, []);
 
   const [attemptLogin, { loading }] = useMutation(LOGIN, {
     onCompleted: (data: any) => {
@@ -50,6 +63,7 @@ export default function Login() {
         input: {
           email: data.email,
           password: data.password,
+          fcmToken: fcmToken,
         },
       },
     });

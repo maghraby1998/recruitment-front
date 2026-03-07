@@ -378,3 +378,30 @@ export const GET_USER = gql`
     }
   }
 `;
+
+export const GET_MY_NOTIFICATIONS = gql`
+  query GetMyNotifications($pagination: PaginationInput) {
+    myNotifications(pagination: $pagination) {
+      data {
+        id
+        title
+        body
+        created_at
+      }
+      pagination {
+        totalItems
+        totalPages
+        currentPage
+        limit
+        hasNextPage
+        hasPreviousPage
+      }
+    }
+  }
+`;
+
+export const GET_NOTIFICATIONS_COUNT = gql`
+  query GetNotificationsCount {
+    notificationsCount
+  }
+`;

@@ -52,6 +52,8 @@ type Query {
   jobPosts(filter: JobPostsFilterInput, pagination: PaginationInput): PaginatedJobPosts
   myJobPosts(pagination: PaginationInput): PaginatedJobPosts
   jobPost(id: ID!): JobPost
+  myNotifications(pagination: PaginationInput): NotificationResponse
+  notificationsCount: Int
   positions(name: String): [Position]
   posts(pagination: PaginationInput): PaginatedPosts
   skills(search: String): [Skill]
@@ -230,6 +232,23 @@ input JobPostsFilterInput {
   status: JobPostStatus
 }
 
+type NotificationResponse {
+  data: [Notification]
+  pagination: PaginationMeta
+}
+
+type Notification {
+  id: ID
+  title: String
+  body: String
+  created_at: DateTime
+}
+
+type Subscription {
+  notificationReceived: Notification
+  postAdded: Post
+}
+
 input PaginationInput {
   page: Int = 1
   limit: Int = 10
@@ -291,6 +310,7 @@ type Comment {
   parentId: ID
   reactions: [PostReactionsResponse]
   authReaction: ReactType
+  created_at: DateTime
 }
 
 type React {
@@ -350,6 +370,7 @@ type User {
 input SignInInput {
   email: String!
   password: String!
+  fcmToken: String
 }
 
 scalar Upload

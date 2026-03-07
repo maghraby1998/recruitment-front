@@ -90,6 +90,7 @@ type CommentReaction = {
 type Comment = {
   id: string;
   content: string;
+  created_at: string;
   user: CommentUser;
   reactions: CommentReaction[];
   authReaction?: ReactType;
@@ -256,6 +257,9 @@ function CommentItem({
               <UserHoverCard user={commentUser as any}>
                 {commentUserName}
               </UserHoverCard>
+            </span>
+            <span className="text-xs text-gray-500 ml-2">
+              {moment(comment.created_at).fromNow()}
             </span>
             <p className="text-gray-700">{comment.content}</p>
           </div>

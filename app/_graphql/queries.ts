@@ -286,6 +286,7 @@ export const GET_POSTS = gql`
         comments {
           id
           content
+          created_at
           parentId
           user {
             id

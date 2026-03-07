@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { ApolloProviderComponent } from "@/components/apollo-provider";
 import { AuthContextProvider, User } from "@/components/context-provider";
+import { FCMListener } from "@/components/fcm-listener";
 import { cookies } from "next/headers";
 import { GRAPHQL_URL } from "@/app/_config";
 
@@ -60,6 +61,7 @@ export default async function RootLayout({
 
   return (
     <AuthContextProvider user={user}>
+      <FCMListener />
       <SidebarProvider
         style={
           {

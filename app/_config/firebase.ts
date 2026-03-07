@@ -49,5 +49,15 @@ export const onForegroundMessage = () => {
 
   onMessage(messaging, (payload) => {
     console.log("Foreground message received:", payload);
+    
+    const notificationTitle = payload.notification?.title || "New Notification";
+    const notificationOptions = {
+      body: payload.notification?.body || "",
+      icon: "/icon-192x192.png",
+    };
+
+    if (Notification.permission === "granted") {
+      new Notification(notificationTitle, notificationOptions);
+    }
   });
 };
